@@ -19,3 +19,13 @@ This repo is using:
 * React + Webpack
 * TypeScript
 * Prettier precommit hook
+
+## Contributors 
+
+- [JooHyung Park](https://gist.github.com/dusskapark)
+- [JinJae Lee]()
+- [JongHee Woo]()
+
+## Communication channel 
+
+- Kakaotalk
