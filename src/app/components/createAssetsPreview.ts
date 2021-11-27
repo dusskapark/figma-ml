@@ -16,7 +16,8 @@ export async function getPNGAssetsFromPluginMessage(
 export function createAssetsPreview(assets: {id: string; path: string; data?: Uint8Array; base64?: string}[]) {
     const contentDiv = document.getElementById('content');
     const footerDiv = document.getElementById('footer');
-    const assetsCount = Math.ceil(assets.length / 5);
+
+    const assetsCount = assets.length;
 
     const selectAllCheckboxWrap = document.createElement('label');
     selectAllCheckboxWrap.className = 'selectAll__wrap';
@@ -25,7 +26,7 @@ export function createAssetsPreview(assets: {id: string; path: string; data?: Ui
     selectAllCheckbox.className = 'checkbox';
     selectAllCheckbox.id = 'selectAll';
     selectAllCheckbox.checked = true;
-
+    selectAllCheckboxWrap.appendChild(selectAllCheckbox);
     footerDiv.appendChild(selectAllCheckboxWrap);
 
     const selectAllLabel = document.createElement('div');
@@ -34,11 +35,12 @@ export function createAssetsPreview(assets: {id: string; path: string; data?: Ui
     selectAllLabelText.setAttribute('for', 'selectAll');
     selectAllLabelText.textContent = `${assetsCount} / ${assetsCount}`;
 
+    selectAllLabel.appendChild(selectAllLabelText);
     footerDiv.appendChild(selectAllLabel);
 
     const exportButton = document.createElement('button');
     exportButton.className = 'button button--primary';
-    exportButton.textContent = 'Export';
+    exportButton.textContent = 'Next';
     footerDiv.appendChild(exportButton);
 
     let selectedCount = assetsCount;
@@ -125,25 +127,6 @@ export function createAssetsPreview(assets: {id: string; path: string; data?: Ui
         }
         selectAllCheckbox.className = 'checkbox';
         selectAllLabelText.textContent = `${selectedCount} / ${assetsCount}`;
-    };
-
-    // Export button
-    exportButton.onclick = () => {
-        if (selectedCount === 0) {
-            parent.postMessage(
-                {
-                    pluginMessage: {
-                        type: 'notify',
-                        text: 'Please select at least 1 asset to export.',
-                    },
-                },
-                '*'
-            );
-            return;
-        }
-        // exportButton.disabled = true;
-
-        // exportButton.disabled = false;
     };
 }
 

@@ -5,9 +5,9 @@ import '../styles/ui.css';
 declare function require(path: string): any;
 
 const App = () => {
-    const onCancel = () => {
-        parent.postMessage({pluginMessage: {type: 'cancel'}}, '*');
-    };
+    // const onCancel = () => {
+    //     parent.postMessage({pluginMessage: {type: 'cancel'}}, '*');
+    // };
 
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
