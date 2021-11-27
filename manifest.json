@@ -1,8 +1,12 @@
 {
-  "name": "Figma Plugin Template",
-  "id": "00000000",
-  "api": "1.0.0",
-  "main": "dist/code.js",
-  "ui": "dist/ui.html",
-  "editorType": ["figma"]
+    "name": "Figma Plugin Template",
+    "id": "00000000",
+    "api": "1.0.0",
+    "main": "dist/code.js",
+    "ui": "dist/ui.html",
+    "menu": [
+        {"name": "Select a Model", "command": "model"},
+        {"name": "Predict", "command": "predict"}
+    ],
+    "editorType": ["figma"]
 }

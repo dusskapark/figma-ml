@@ -1,37 +1,187 @@
+* {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+/*  Typography */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: fallback;
+    src: url('https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.7') format('woff2'),
+        url('https://rsms.me/inter/font-files/Inter-Regular.woff?v=3.7') format('woff');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: fallback;
+    src: url('https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7') format('woff2'),
+        url('https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7') format('woff');
+}
+
+.type {
+    margin: 0;
+    padding: 0;
+}
+
+.type--11-pos {
+    color: rgba(0, 0, 0, 0.8);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+}
+
+.button {
+    display: inline-block;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    margin: 1px 0 1px 0;
+    padding: 5px 16px 5px 16px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    outline: none;
+}
+
+.button--primary {
+    color: #ffffff;
+    background-color: #18a0fb;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.01em;
+}
+
+.button--primary:active,
+.button--primary:focus {
+    border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+.button--primary:disabled {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.button--primary-destructive {
+    color: #ffffff;
+    background-color: #f24822;
+}
+
+.button--primary-destructive:active,
+.button--primary-destructive:focus {
+    border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+.button--primary-destructive:disabled {
+    opacity: 0.4;
+}
+
 body {
-    font: 12px sans-serif;
-    text-align: center;
-    margin: 20px;
+    margin: 0;
+    user-select: none;
 }
-button {
-    border-radius: 5px;
-    background: white;
-    color: black;
-    border: none;
-    padding: 8px 15px;
-    margin: 0 5px;
-    box-shadow: inset 0 0 0 1px black;
-    outline: none;
+a:link,
+a:visited {
+    text-decoration: none;
 }
-#create {
-    box-shadow: none;
-    background: #18a0fb;
-    color: white;
+#app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
-input {
-    border: none;
-    outline: none;
+#content {
+    flex: auto;
+    overflow: auto;
+}
+#footer {
+    height: 48px;
     padding: 8px;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
 }
-input:hover {
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+
+.export-item {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    margin: 16px 0;
+    padding: 0 8px;
 }
-button:focus {
-    box-shadow: inset 0 0 0 2px #18a0fb;
+.export-item .export-item__checkbox,
+.checkbox,
+#footer .selectAll__wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 0;
+    flex: 0 0 32px;
 }
-#create:focus {
-    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.3);
+.export-item .export-item__checkbox,
+#footer .selectAll__wrap {
+    height: 32px;
+    width: 32px;
 }
-input:focus {
-    box-shadow: inset 0 0 0 2px #18a0fb;
+.export-item--appIcon .export-item__checkbox {
+    width: 8px;
+    flex: 0 0 8px;
+}
+.checkbox {
+    -webkit-appearance: none;
+    -moz-appearance: checkbox;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    outline: none;
+}
+.checkbox::after {
+    content: '';
+    display: inline-flex;
+    margin: 1px;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    box-sizing: border-box;
+    background-color: #fff;
+    border: 1px solid #333;
+}
+.checkbox:checked::after {
+    border: 1px solid #18a0fb;
+    background-color: #18a0fb;
+    background-image: url("data:image/svg+xml,%3Csvg width='8px' height='8px' viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='Page-1' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E%3Cpolygon id='Path' fill='%23FFFFFF' points='1.17647 2.82377 3.05882 4.70613 6.82353 0.941406 8 2.11788 3.05882 7.05908 0 4.00024'%3E%3C/polygon%3E%3C/g%3E%3C/svg%3E");
+    background-position: 50%;
+    background-repeat: no-repeat;
+}
+.checkbox--mix:checked::after {
+    background-color: #fff;
+    border: 1px solid #333;
+    background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 9H5V7H11V9Z' fill='black' /%3E%3C/svg%3E");
+}
+.export-item .export-item__thumb {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border: 1px solid #d4d4d4;
+    padding: 1px;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+.export-item .export-item__thumb img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    background-image: url("data:image/svg+xml,%3Csvg width='28px' height='28px' viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cg%3E%3Cpath d='M14,21 L14,28 L7,28 L7,21 L14,21 Z M28,21 L28,28 L21,28 L21,21 L28,21 Z M21,14 L21,21 L14,21 L14,14 L21,14 Z M7,14 L7,21 L0,21 L0,14 L7,14 Z M14,7 L14,14 L7,14 L7,7 L14,7 Z M28,7 L28,14 L21,14 L21,7 L28,7 Z M7,0 L7,7 L0,7 L0,0 L7,0 Z M21,0 L21,7 L14,7 L14,0 L21,0 Z' fill='%23F2F2F2'%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
+}
+.export-item .export-item__text {
+    flex: 1 1 100%;
+    overflow-x: hidden;
+    padding-left: 16px;
+}
+.selectAll__label {
+    flex: 1 1 100%;
+    overflow-x: hidden;
 }
