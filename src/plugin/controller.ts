@@ -30,7 +30,6 @@ function getParentPage(node: BaseNode): PageNode {
 
 function toAndroidResourceName(name: string): string {
     name = name.substr(name.lastIndexOf('/') + 1);
-    console.log(name);
     // Latin to ascii
     const latinToAsciiMapping = {
         ae: 'ä|æ|ǽ',
@@ -105,11 +104,6 @@ function toAndroidResourceName(name: string): string {
     return name === '' ? 'untitled' : name;
 }
 
-if (figma.command === 'model') {
-    console.log('Select a model');
-    figma.closePlugin();
-}
-
 if (figma.command === 'predict') {
     const currentPage = figma.currentPage;
     const selectedLayers = currentPage.selection;
@@ -121,7 +115,6 @@ if (figma.command === 'predict') {
     } else {
         selectedLayers.forEach((layer) => {
             if (layer.type === 'SLICE' || (<ExportMixin>layer).exportSettings.length > 0) {
-                console.log(layer.exportSettings);
                 exportableLayers.push(layer);
             }
             if (layer.type === 'GROUP') {

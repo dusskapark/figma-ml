@@ -1,7 +1,7 @@
 {
-	"name": "figma-plugin-react-template",
+	"name": "figma-ml",
 	"version": "1.0.0",
-	"description": "This plugin template uses Typescript. If you are familiar with Javascript, Typescript will look very familiar. In fact, valid Javascript code is already valid Typescript code.",
+	"description": "the AI-powered spell checker for design systems",
 	"license": "ISC",
 	"scripts": {
 		"build": "webpack --mode=production",
