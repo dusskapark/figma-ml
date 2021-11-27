@@ -17,6 +17,17 @@ async function getExportImagesFromLayer(layer: any) {
     return images;
 }
 
+function getParentPage(node: BaseNode): PageNode {
+    let parent = node.parent;
+    if (node.parent) {
+        while (parent && parent.type !== 'PAGE') {
+            parent = parent.parent;
+        }
+        return parent as PageNode;
+    }
+    return figma.currentPage;
+}
+
 function toAndroidResourceName(name: string): string {
     name = name.substr(name.lastIndexOf('/') + 1);
     console.log(name);
@@ -145,20 +156,13 @@ if (figma.command === 'predict') {
                 });
 
             figma.ui.onmessage = (msg) => {
-                if (msg.type === 'log') {
-                    const nodes = [];
-                    const frames = figma.currentPage.children;
-                    frames.forEach((element) => {
-                        nodes.push({
-                            name: element.name,
-                            id: element.id,
-                        });
-                    });
-
-                    figma.ui.postMessage({
-                        type: 'frames',
-                        message: JSON.stringify(nodes),
-                    });
+                // Show layer
+                if (msg.type === 'showLayer') {
+                    const layerId = msg.id;
+                    const layer = figma.getNodeById(layerId);
+                    const page = getParentPage(layer);
+                    figma.currentPage = page;
+                    figma.viewport.scrollAndZoomIntoView([layer]);
                 }
 
                 if (msg.type === 'cancel') {

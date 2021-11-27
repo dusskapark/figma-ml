@@ -9,10 +9,6 @@ const App = () => {
         parent.postMessage({pluginMessage: {type: 'cancel'}}, '*');
     };
 
-    const onLog = () => {
-        parent.postMessage({pluginMessage: {type: 'log'}}, '*');
-    };
-
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event) => {
