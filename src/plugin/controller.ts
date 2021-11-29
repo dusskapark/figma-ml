@@ -137,8 +137,9 @@ if (figma.command === 'predict') {
         } else {
             Promise.all(exportableLayers.map((layer) => getExportImagesFromLayer(layer)))
                 .then((exportImages) => {
-                    const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
-                    figma.showUI(__html__, {width: 300, height: uiHeight});
+                    // const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
+                    // figma.showUI(__html__, {width: 300, height: uiHeight});
+                    figma.showUI(__html__, {width: 480, height: 740});
                     figma.ui.postMessage({
                         type: 'export-png',
                         exportImages: exportImages,

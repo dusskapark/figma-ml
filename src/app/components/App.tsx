@@ -1,19 +1,16 @@
 import * as React from 'react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import '../styles/ui.css';
+import {uint8ArrayToObjectURL} from './ImageHandling';
+import Detection from './Detection';
 
 declare function require(path: string): any;
 
 const App = () => {
     const [assets, setAssets] = React.useState(null);
     const [checkItems, setCheckItems] = React.useState([]);
-
-    // const onCancel = () => {
-    //     parent.postMessage({pluginMessage: {type: 'cancel'}}, '*');
-    // };
-
-    const uint8ArrayToObjectURL = (data: Uint8Array): string => {
-        return URL.createObjectURL(new Blob([data], {type: 'image/png'}));
-    };
+    const [detections, setDetections] = React.useState(false);
 
     const getPNGAssetsFromPluginMessage = async (
         pluginMessage: any
@@ -62,6 +59,18 @@ const App = () => {
         }
     };
 
+    // 선택된 체크박스의 데이터만 전송
+
+    const handleProps = (ids: string[], assets: {id: string; path: string; data?: Uint8Array; base64?: string}[]) => {
+        let images: any[] = [];
+        ids.forEach((id) => {
+            const image = assets.filter((x) => x.id === id);
+            images.push(image[0]);
+        });
+
+        return images;
+    };
+
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event: any) => {
@@ -72,54 +81,63 @@ const App = () => {
                 setAssets(png);
                 setCheckItems(createIDArray(png));
             }
+            if (pluginMessage.type === 'test') {
+            }
         };
     }, []);
 
     return (
         <div id="app">
-            <div id="content">
-                {assets === null ? (
-                    <p>No Contents</p>
-                ) : (
-                    assets.map(
-                        (asset: {id: string; path: string; data?: Uint8Array; base64?: string}, index: number) => (
-                            <div key={index} className="export-item">
-                                <label className="export-item__checkbox">
-                                    <input
-                                        type="checkbox"
-                                        id={asset.id}
-                                        className="checkbox"
-                                        onChange={(e) => handleSingleCheck(e.target.checked, asset.id)}
-                                        checked={checkItems.indexOf(asset.id) !== -1 ? true : false}
-                                    />
-                                </label>
-                                <div className="export-item__thumb">
-                                    <img
-                                        src={uint8ArrayToObjectURL(asset.data)}
-                                        onClick={() => {
-                                            parent.postMessage(
-                                                {
-                                                    pluginMessage: {
-                                                        type: 'showLayer',
-                                                        id: asset.id,
+            {/* Loading */}
+            {assets === null ? (
+                <React.Fragment>
+                    <Box sx={{display: 'flex'}}>
+                        <CircularProgress />
+                    </Box>
+                </React.Fragment>
+            ) : detections ? (
+                <React.Fragment>
+                    <Detection assets={handleProps(checkItems, assets)} />
+                </React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <div id="content">
+                        {assets.map(
+                            (asset: {id: string; path: string; data?: Uint8Array; base64?: string}, index: number) => (
+                                <div key={index} className="export-item">
+                                    <label className="export-item__checkbox">
+                                        <input
+                                            type="checkbox"
+                                            id={asset.id}
+                                            className="checkbox"
+                                            onChange={(e) => handleSingleCheck(e.target.checked, asset.id)}
+                                            checked={checkItems.indexOf(asset.id) !== -1 ? true : false}
+                                        />
+                                    </label>
+                                    <div className="export-item__thumb">
+                                        <img
+                                            src={uint8ArrayToObjectURL(asset.data)}
+                                            onClick={() => {
+                                                parent.postMessage(
+                                                    {
+                                                        pluginMessage: {
+                                                            type: 'showLayer',
+                                                            id: asset.id,
+                                                        },
                                                     },
-                                                },
-                                                '*'
-                                            );
-                                        }}
-                                    />
+                                                    '*'
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="type type--11-pos export-item__text">
+                                        <label htmlFor={asset.id}>{asset.path}</label>
+                                    </div>
                                 </div>
-                                <div className="type type--11-pos export-item__text">
-                                    <label htmlFor={asset.id}>{asset.path}</label>
-                                </div>
-                            </div>
-                        )
-                    )
-                )}
-            </div>
-            <footer id="footer">
-                {assets !== null ? (
-                    <>
+                            )
+                        )}
+                    </div>
+                    <footer id="footer">
                         <label className="selectAll__wrap">
                             <input
                                 type="checkbox"
@@ -134,10 +152,17 @@ const App = () => {
                                 {checkItems.length} / {assets.length}
                             </label>
                         </div>
-                        <button className="button button--primary">Next</button>
-                    </>
-                ) : null}
-            </footer>
+                        <button
+                            className="button button--primary"
+                            onClick={() => {
+                                setDetections(true);
+                            }}
+                        >
+                            Next
+                        </button>
+                    </footer>
+                </React.Fragment>
+            )}
         </div>
     );
 };
