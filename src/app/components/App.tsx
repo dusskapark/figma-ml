@@ -1,16 +1,21 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+import {Box, CircularProgress} from '@mui/material';
+
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
-import Detection from './Detection';
+import Predict from './Predict';
+import * as tf from '@tensorflow/tfjs';
+
+tf.setBackend('webgl');
 
 declare function require(path: string): any;
 
 const App = () => {
     const [assets, setAssets] = React.useState(null);
     const [checkItems, setCheckItems] = React.useState([]);
-    const [detections, setDetections] = React.useState(false);
+    const [ableToPredict, setAbleToPredict] = React.useState(false);
+    const [model, setModel] = React.useState(null);
+    const [classesDir, setClassesDir] = React.useState(null);
 
     const getPNGAssetsFromPluginMessage = async (
         pluginMessage: any
@@ -25,6 +30,15 @@ const App = () => {
             });
         });
         return assets;
+    };
+
+    const loadModel = async (selected: string) => {
+        const loadedModel = await tf.loadGraphModel(
+            'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/model.json'
+        );
+        const classesDir = require(`../assets/models/${selected}/label_map.json`);
+        setClassesDir(classesDir);
+        setModel(loadedModel);
     };
 
     // 체크박스 전체 단일 개체 선택
@@ -80,6 +94,9 @@ const App = () => {
                 const png = await getPNGAssetsFromPluginMessage(pluginMessage);
                 setAssets(png);
                 setCheckItems(createIDArray(png));
+
+                loadModel('RICO');
+                console.log(model, classesDir);
             }
             if (pluginMessage.type === 'test') {
             }
@@ -95,9 +112,9 @@ const App = () => {
                         <CircularProgress />
                     </Box>
                 </React.Fragment>
-            ) : detections ? (
+            ) : ableToPredict ? (
                 <React.Fragment>
-                    <Detection assets={handleProps(checkItems, assets)} />
+                    <Predict assets={handleProps(checkItems, assets)} />
                 </React.Fragment>
             ) : (
                 <React.Fragment>
@@ -155,7 +172,7 @@ const App = () => {
                         <button
                             className="button button--primary"
                             onClick={() => {
-                                setDetections(true);
+                                setAbleToPredict(true);
                             }}
                         >
                             Next
