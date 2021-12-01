@@ -16,6 +16,7 @@
 		"@tensorflow/tfjs": "3.7.0",
 		"@tensorflow/tfjs-backend-webgl": "3.7.0",
 		"@tensorflow/tfjs-converter": "3.7.0",
+		"axios": "^0.24.0",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"react-swipeable-views": "^0.14.0"
