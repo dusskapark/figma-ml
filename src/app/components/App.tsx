@@ -1,9 +1,10 @@
 import * as React from 'react';
-import {Box, CircularProgress} from '@mui/material';
+import axios from 'axios';
+import {Box, LinearProgress} from '@mui/material';
 
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
-import Predict from './Predict';
+import Detection from './Detection';
 import * as tf from '@tensorflow/tfjs';
 
 tf.setBackend('webgl');
@@ -31,14 +32,17 @@ const App = () => {
         });
         return assets;
     };
-
     const loadModel = async (selected: string) => {
-        const loadedModel = await tf.loadGraphModel(
-            'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/model.json'
-        );
-        const classesDir = require(`../assets/models/${selected}/label_map.json`);
-        setClassesDir(classesDir);
-        setModel(loadedModel);
+        const baseURL = 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/';
+        try {
+            const loadedModel = await tf.loadGraphModel(baseURL + selected + '/model.json');
+            const classesDir = await axios.get(baseURL + selected + '/label_map.json');
+
+            setModel(loadedModel);
+            setClassesDir(classesDir.data);
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     // 체크박스 전체 단일 개체 선택
@@ -85,6 +89,8 @@ const App = () => {
         return images;
     };
 
+    const isReady = !!model && !!classesDir && !!assets;
+
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event: any) => {
@@ -96,7 +102,6 @@ const App = () => {
                 setCheckItems(createIDArray(png));
 
                 loadModel('RICO');
-                console.log(model, classesDir);
             }
             if (pluginMessage.type === 'test') {
             }
@@ -106,15 +111,15 @@ const App = () => {
     return (
         <div id="app">
             {/* Loading */}
-            {assets === null ? (
+            {!isReady ? (
                 <React.Fragment>
-                    <Box sx={{display: 'flex'}}>
-                        <CircularProgress />
+                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                        <LinearProgress />
                     </Box>
                 </React.Fragment>
             ) : ableToPredict ? (
                 <React.Fragment>
-                    <Predict assets={handleProps(checkItems, assets)} />
+                    <Detection data={handleProps(checkItems, assets)} model={model} classesDir={classesDir} />
                 </React.Fragment>
             ) : (
                 <React.Fragment>
