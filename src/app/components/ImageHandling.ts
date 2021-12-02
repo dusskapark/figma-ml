@@ -73,7 +73,7 @@ const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | 
     return context;
 };
 
-const drawBoxes = (detections, context, font?: string) => {
+const drawBoxes = (detections, context, font?: string, lineWidth?: number) => {
     detections.forEach((item: any) => {
         const x = item['bbox'][0];
         const y = item['bbox'][1];
@@ -82,11 +82,11 @@ const drawBoxes = (detections, context, font?: string) => {
 
         // Draw the bounding box.
         context.strokeStyle = '#00FFFF';
-        context.lineWidth = 4;
+        context.lineWidth = lineWidth || 4;
         context.strokeRect(x, y, width, height);
 
-        if (font === null) {
-            return null;
+        if (!font) {
+            return context;
         } else {
             const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
             // Draw the label background.
@@ -99,8 +99,8 @@ const drawBoxes = (detections, context, font?: string) => {
             // Draw the text last to ensure it's on top.
             context.fillStyle = '#000000';
             context.fillText(content, x, y);
+            return context;
         }
-        return context;
     });
 };
 
@@ -117,7 +117,7 @@ export const runPredict = async (
         const predictions = await predict(expandedimg, model);
         const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
         console.log('interpreted: ', detections);
-        drawBoxes(detections, context, font);
+        drawBoxes(detections, context, null, 1);
     } catch (e) {
         console.log(e);
     }

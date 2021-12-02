@@ -125,13 +125,7 @@ if (figma.command === 'predict') {
                 );
             }
         });
-        // if (exportableLayers.length === 0) {
-        //     figma.root.children.forEach((page) => {
-        //         exportableLayers = exportableLayers.concat(
-        //             page.findAll((child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0)
-        //         );
-        //     });
-        // }
+
         if (exportableLayers.length === 0) {
             figma.closePlugin('No exportable layers in document.');
         } else {

@@ -13,13 +13,6 @@ const Detection = (props: {item; model; classesDir}) => {
         runPredict(imgRef.current, canvasRef.current, model, classesDir);
     };
 
-    // React.useEffect(() => {
-    //     if (imgLoaded) {
-    //         runPredict(imgRef.current, canvasRef.current, model, classesDir);
-    //         setImgLoad(false);
-    //     }
-    // }, [imgLoaded]);
-
     return (
         <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
             <img
