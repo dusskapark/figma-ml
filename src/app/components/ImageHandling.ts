@@ -18,6 +18,11 @@ const predict = async (inputs: object, model: any) => {
     return predictions;
 };
 
+const getLabelByID = (dir: {name: string; id: number}[], i: number) => {
+    let label = dir.filter((x) => x.id === i);
+    return label[0].name;
+};
+
 const renderPredictions = (
     predictions: any,
     width: number,
@@ -47,7 +52,7 @@ const renderPredictions = (
 
             detectionObjects.push({
                 class: classes[i],
-                label: classesDir[classes[i]].name,
+                label: getLabelByID(classesDir, classes[i]),
                 score: score.toFixed(4),
                 bbox: bbox,
             });
@@ -57,6 +62,48 @@ const renderPredictions = (
     return detectionObjects;
 };
 
+const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | null, font: string) => {
+    const context = canvas?.getContext('2d');
+    if (!context || !image) return;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    // Font options.
+    context.font = font;
+    context.textBaseline = 'top';
+    return context;
+};
+
+const drawBoxes = (detections, context, font?: string) => {
+    detections.forEach((item: any) => {
+        const x = item['bbox'][0];
+        const y = item['bbox'][1];
+        const width = item['bbox'][2];
+        const height = item['bbox'][3];
+
+        // Draw the bounding box.
+        context.strokeStyle = '#00FFFF';
+        context.lineWidth = 4;
+        context.strokeRect(x, y, width, height);
+
+        if (font === null) {
+            return null;
+        } else {
+            const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
+            // Draw the label background.
+            context.fillStyle = '#00FFFF';
+
+            const textWidth = context.measureText(content).width;
+            const textHeight = parseInt(font, 10); // base 10
+            context.fillRect(x, y, textWidth + 4, textHeight + 4);
+
+            // Draw the text last to ensure it's on top.
+            context.fillStyle = '#000000';
+            context.fillText(content, x, y);
+        }
+        return context;
+    });
+};
+
 export const runPredict = async (
     image: HTMLImageElement | null,
     c: HTMLCanvasElement | null,
@@ -64,48 +111,13 @@ export const runPredict = async (
     classesDir: {name: string; id: number}[]
 ) => {
     try {
-        const context = c?.getContext('2d');
-        if (!context || !image) return;
-        context.drawImage(image, 0, 0);
-
-        // Font options.
         const font = '16px sans-serif';
-        context.font = font;
-        context.textBaseline = 'top';
-
+        const context = drawCanvas(image, c, font);
         const expandedimg = loadImage(image);
         const predictions = await predict(expandedimg, model);
         const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
         console.log('interpreted: ', detections);
-
-        detections.forEach((item: any) => {
-            const x = item['bbox'][0];
-            const y = item['bbox'][1];
-            const width = item['bbox'][2];
-            const height = item['bbox'][3];
-
-            // Draw the bounding box.
-            context.strokeStyle = '#00FFFF';
-            context.lineWidth = 4;
-            context.strokeRect(x, y, width, height);
-
-            // Draw the label background.
-            context.fillStyle = '#00FFFF';
-            const textWidth = context.measureText(item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%').width;
-            const textHeight = parseInt(font, 10); // base 10
-            context.fillRect(x, y, textWidth + 4, textHeight + 4);
-        });
-
-        for (let i = 0; i < detections.length; i++) {
-            const item = detections[i];
-            const x = item['bbox'][0];
-            const y = item['bbox'][1];
-            const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
-
-            // Draw the text last to ensure it's on top.
-            context.fillStyle = '#000000';
-            context.fillText(content, x, y);
-        }
+        drawBoxes(detections, context, font);
     } catch (e) {
         console.log(e);
     }

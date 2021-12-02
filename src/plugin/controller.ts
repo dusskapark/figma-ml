@@ -125,13 +125,13 @@ if (figma.command === 'predict') {
                 );
             }
         });
-        if (exportableLayers.length === 0) {
-            figma.root.children.forEach((page) => {
-                exportableLayers = exportableLayers.concat(
-                    page.findAll((child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0)
-                );
-            });
-        }
+        // if (exportableLayers.length === 0) {
+        //     figma.root.children.forEach((page) => {
+        //         exportableLayers = exportableLayers.concat(
+        //             page.findAll((child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0)
+        //         );
+        //     });
+        // }
         if (exportableLayers.length === 0) {
             figma.closePlugin('No exportable layers in document.');
         } else {
@@ -139,7 +139,7 @@ if (figma.command === 'predict') {
                 .then((exportImages) => {
                     // const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
                     // figma.showUI(__html__, {width: 300, height: uiHeight});
-                    figma.showUI(__html__, {width: 360, height: 640});
+                    figma.showUI(__html__, {width: 360, height: 640 + 48});
                     figma.ui.postMessage({
                         type: 'export-png',
                         exportImages: exportImages,

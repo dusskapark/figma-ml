@@ -1,69 +1,41 @@
 import * as React from 'react';
-import {useTheme} from '@mui/material/styles';
-import {KeyboardArrowLeft, KeyboardArrowRight} from '@mui/icons-material';
-import SwipeableViews from 'react-swipeable-views';
+import {uint8ArrayToObjectURL, runPredict} from './ImageHandling';
 
-import {Box, MobileStepper, Paper, Button} from '@mui/material';
-import FullWidthTabs from './FullWidthTabs';
+const Detection = (props: {item; model; classesDir}) => {
+    const {item, model, classesDir} = props;
+    // const [imgLoaded, setImgLoad] = React.useState(false);
 
-// import VerticalLinearStepper from './VerticalLinearStepper';
+    const imgRef = React.useRef<HTMLImageElement>(null);
+    const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-function Detection(props) {
-    const [activeStep, setActiveStep] = React.useState(0);
-
-    const {model, data, classesDir} = props;
-    const theme = useTheme();
-    const maxSteps = data.length;
-
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    const handleImgLoad = () => {
+        console.log('image loaded...');
+        runPredict(imgRef.current, canvasRef.current, model, classesDir);
     };
 
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const handleStepChange = (step: number) => {
-        setActiveStep(step);
-    };
+    // React.useEffect(() => {
+    //     if (imgLoaded) {
+    //         runPredict(imgRef.current, canvasRef.current, model, classesDir);
+    //         setImgLoad(false);
+    //     }
+    // }, [imgLoaded]);
 
     return (
-        <Box sx={{maxWidth: 360, flexGrow: 1}}>
-            <SwipeableViews
-                axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-                index={activeStep}
-                onChangeIndex={handleStepChange}
-                enableMouseEvents
-            >
-                {data.map((step, index) => (
-                    <div key={step.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                        {Math.abs(activeStep - index) <= 2 ? (
-                            <FullWidthTabs step={step} model={model} classesDir={classesDir} />
-                        ) : null}
-                    </div>
-                ))}
-            </SwipeableViews>
-            <Paper sx={{position: 'fixed', bottom: 0, left: 0, right: 0}} elevation={3}>
-                <MobileStepper
-                    steps={maxSteps}
-                    position="static"
-                    activeStep={activeStep}
-                    nextButton={
-                        <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1}>
-                            Next
-                            {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-                        </Button>
-                    }
-                    backButton={
-                        <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
-                            {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                            Back
-                        </Button>
-                    }
-                />
-            </Paper>
-        </Box>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <img
+                ref={imgRef}
+                style={{position: 'absolute'}}
+                onLoad={handleImgLoad}
+                src={uint8ArrayToObjectURL(item.data)}
+                alt={item.path}
+                id={item.id}
+                width="360"
+                height="640"
+                crossOrigin="anonymous"
+            />
+            <canvas ref={canvasRef} style={{position: 'relative'}} id={`canvas_${item.id}`} width="360" height="640" />
+        </div>
     );
-}
+};
 
 export default Detection;

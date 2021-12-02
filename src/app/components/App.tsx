@@ -1,10 +1,10 @@
 import * as React from 'react';
 import axios from 'axios';
-import {Box, LinearProgress} from '@mui/material';
+import {Box, CircularProgress} from '@mui/material';
 
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
-import Detection from './Detection';
+import Predict from './Predict';
 import * as tf from '@tensorflow/tfjs';
 
 tf.setBackend('webgl');
@@ -114,12 +114,12 @@ const App = () => {
             {!isReady ? (
                 <React.Fragment>
                     <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-                        <LinearProgress />
+                        <CircularProgress />
                     </Box>
                 </React.Fragment>
             ) : ableToPredict ? (
                 <React.Fragment>
-                    <Detection data={handleProps(checkItems, assets)} model={model} classesDir={classesDir} />
+                    <Predict data={handleProps(checkItems, assets)} model={model} classesDir={classesDir} />
                 </React.Fragment>
             ) : (
                 <React.Fragment>
