@@ -1,22 +1,28 @@
-// console.log((<ChildrenMixin>layer).children);
+const isComponent = (raw) => {
+    return 'id' in raw && 'mainComponent' in raw;
+};
 
-// raw 객체로부터 copmonent를 추출하여 객체화
-function extractComponent(instance) {
+function extractComponent(raw: any, x: number, y: number) {
+    const rect = raw.absoluteRenderBounds;
+
     return {
-        id: instance.id,
-        bbox: [instance.x, instance.y, instance.width, instance.height],
-        label: instance.mainComponent.parent.name,
+        id: raw.id,
+        bbox: [rect.x - x, rect.y - y, rect.width, rect.height],
+        label: raw.name,
     };
 }
 
-export function ExtractComponents(raw) {
-    const components = [];
+export const ExtractComponents = (raw) => {
+    let components: any[] = [];
+    let instances: any[] = [];
 
-    for (const instance of (<ChildrenMixin>raw).children) {
-        if (instance.type === 'INSTANCE') {
-            components.push(extractComponent(instance));
+    instances = instances.concat((<ChildrenMixin>raw).findAll((child) => child.type === 'INSTANCE'));
+
+    instances.forEach((instance) => {
+        if (isComponent(instance)) {
+            instance.absoluteRenderBounds !== null ? components.push(extractComponent(instance, raw.x, raw.y)) : null;
         }
-    }
+    });
 
     return components;
-}
+};
