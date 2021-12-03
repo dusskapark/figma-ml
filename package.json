@@ -17,9 +17,11 @@
 		"@tensorflow/tfjs-backend-webgl": "3.7.0",
 		"@tensorflow/tfjs-converter": "3.7.0",
 		"axios": "^0.24.0",
+		"overlap-area": "^1.0.0",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
-		"react-swipeable-views": "^0.14.0"
+		"react-swipeable-views": "^0.14.0",
+		"string-comparison": "^1.0.9"
 	},
 	"devDependencies": {
 		"@figma/plugin-typings": "^1.24.0",
