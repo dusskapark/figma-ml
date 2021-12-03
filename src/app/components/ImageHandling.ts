@@ -4,9 +4,41 @@ export const uint8ArrayToObjectURL = (data: Uint8Array): string => {
     return URL.createObjectURL(new Blob([data], {type: 'image/png'}));
 };
 
+// const getPNGAssetsFromPluginMessage = async (
+//     pluginMessage: any
+// ): Promise<{id: string; path: string; data: Uint8Array; width: number; height: number; components: any[]}[]> => {
+//     let assets: any[] = [];
+//     let exports = pluginMessage.exportImages;
+//     console.log(exports);
+//     exports.forEach((item) => {
+//         assets.push({
+//             id: item.id,
+//             path: item.path,
+//             data: item.imageData,
+//             width: item.width,
+//             height: item.height,
+//             components: item.components,
+//         });
+//     });
+//     return assets;
+// };
+
+const postAlert = (message: string) => {
+    parent.postMessage(
+        {
+            pluginMessage: {
+                type: 'alert',
+                message: message,
+            },
+        },
+        '*'
+    );
+};
+
 const loadImage = (img: HTMLImageElement | null) => {
     if (!img) return;
     console.log('Pre-processing image...');
+
     const tfimg = tf.browser.fromPixels(img).toInt();
     const expandedimg = tfimg.expandDims();
     return expandedimg;
@@ -14,6 +46,7 @@ const loadImage = (img: HTMLImageElement | null) => {
 
 const predict = async (inputs: object, model: any) => {
     console.log('Running predictions...');
+    postAlert('Running predictions...');
     const predictions = await model.executeAsync(inputs);
     return predictions;
 };
@@ -30,6 +63,7 @@ const renderPredictions = (
     classesDir: {name: string; id: number}[]
 ) => {
     console.log('Highlighting results...');
+    postAlert('Highlighting results...');
 
     //Getting predictions
     const boxes = predictions[3].arraySync();
@@ -73,7 +107,7 @@ const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | 
     return context;
 };
 
-const drawBoxes = (detections, context, font?: string, lineWidth?: number) => {
+const drawBoxes = (detections, context, font?: string, lineWidth?: number, color?: string) => {
     detections.forEach((item: any) => {
         const x = item['bbox'][0];
         const y = item['bbox'][1];
@@ -81,7 +115,7 @@ const drawBoxes = (detections, context, font?: string, lineWidth?: number) => {
         const height = item['bbox'][3];
 
         // Draw the bounding box.
-        context.strokeStyle = '#00FFFF';
+        context.strokeStyle = color || '#00FFFF';
         context.lineWidth = lineWidth || 4;
         context.strokeRect(x, y, width, height);
 
@@ -90,7 +124,7 @@ const drawBoxes = (detections, context, font?: string, lineWidth?: number) => {
         } else {
             const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
             // Draw the label background.
-            context.fillStyle = '#00FFFF';
+            context.fillStyle = color || '#00FFFF';
 
             const textWidth = context.measureText(content).width;
             const textHeight = parseInt(font, 10); // base 10
@@ -117,7 +151,7 @@ export const runPredict = async (
         const predictions = await predict(expandedimg, model);
         const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
         console.log('interpreted: ', detections);
-        drawBoxes(detections, context, null, 1);
+        drawBoxes(detections, context, null, 1, '#00FFFF');
     } catch (e) {
         console.log(e);
     }

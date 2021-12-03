@@ -18,20 +18,6 @@ const App = () => {
     const [model, setModel] = React.useState(null);
     const [classesDir, setClassesDir] = React.useState(null);
 
-    const getPNGAssetsFromPluginMessage = async (
-        pluginMessage: any
-    ): Promise<{id: string; path: string; data: Uint8Array}[]> => {
-        let assets: any[] = [];
-        let exports = pluginMessage.exportImages;
-        exports.forEach((item) => {
-            assets.push({
-                id: item.id,
-                path: item.path,
-                data: item.imageData,
-            });
-        });
-        return assets;
-    };
     const loadModel = async (selected: string) => {
         const baseURL = 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/';
         try {
@@ -79,7 +65,10 @@ const App = () => {
 
     // 선택된 체크박스의 데이터만 전송
 
-    const handleProps = (ids: string[], assets: {id: string; path: string; data?: Uint8Array; base64?: string}[]) => {
+    const handleProps = (
+        ids: string[],
+        assets: {id: string; path: string; data?: Uint8Array; width: number; height: number; base64?: string}[]
+    ) => {
         let images: any[] = [];
         ids.forEach((id) => {
             const image = assets.filter((x) => x.id === id);
@@ -97,13 +86,10 @@ const App = () => {
             const pluginMessage = event.data.pluginMessage;
             // Export PNG
             if (pluginMessage.type === 'export-png') {
-                const png = await getPNGAssetsFromPluginMessage(pluginMessage);
+                const png = await pluginMessage.exportImages;
                 setAssets(png);
                 setCheckItems(createIDArray(png));
-
                 loadModel('RICO');
-            }
-            if (pluginMessage.type === 'test') {
             }
         };
     }, []);
@@ -113,19 +99,34 @@ const App = () => {
             {/* Loading */}
             {!isReady ? (
                 <React.Fragment>
-                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                    <Box p={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                         <CircularProgress />
                     </Box>
                 </React.Fragment>
             ) : ableToPredict ? (
                 <React.Fragment>
-                    <Predict data={handleProps(checkItems, assets)} model={model} classesDir={classesDir} />
+                    <Predict
+                        data={handleProps(checkItems, assets)}
+                        model={model}
+                        classesDir={classesDir}
+                        setAbleToPredict={setAbleToPredict}
+                    />
                 </React.Fragment>
             ) : (
                 <React.Fragment>
                     <div id="content">
                         {assets.map(
-                            (asset: {id: string; path: string; data?: Uint8Array; base64?: string}, index: number) => (
+                            (
+                                asset: {
+                                    id: string;
+                                    path: string;
+                                    data?: Uint8Array;
+                                    width: number;
+                                    height: number;
+                                    base64?: string;
+                                },
+                                index: number
+                            ) => (
                                 <div key={index} className="export-item">
                                     <label className="export-item__checkbox">
                                         <input

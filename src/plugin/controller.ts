@@ -1,3 +1,5 @@
+import {ExtractComponents} from './extractComponents';
+
 async function getExportImagesFromLayer(layer: any) {
     let assetName = toAndroidResourceName(layer.name);
 
@@ -6,12 +8,15 @@ async function getExportImagesFromLayer(layer: any) {
     };
 
     const imageData = await (<ExportMixin>layer).exportAsync(exportSetting);
+    const components = ExtractComponents(layer);
+
     const images = {
         id: layer.id,
         width: Math.round(layer.width),
         height: Math.round(layer.height),
         path: assetName + '.png',
-        imageData: imageData,
+        data: imageData,
+        components: components,
     };
 
     return images;
@@ -103,7 +108,9 @@ function toAndroidResourceName(name: string): string {
     name = name.toLowerCase();
     return name === '' ? 'untitled' : name;
 }
-
+if (figma.command === 'model') {
+    figma.closePlugin('TBD');
+}
 if (figma.command === 'predict') {
     const currentPage = figma.currentPage;
     const selectedLayers = currentPage.selection;
@@ -133,7 +140,7 @@ if (figma.command === 'predict') {
                 .then((exportImages) => {
                     // const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
                     // figma.showUI(__html__, {width: 300, height: uiHeight});
-                    figma.showUI(__html__, {width: 360, height: 640 + 48});
+                    figma.showUI(__html__, {width: 360, height: 640 + 48 + 48});
                     figma.ui.postMessage({
                         type: 'export-png',
                         exportImages: exportImages,
@@ -153,8 +160,8 @@ if (figma.command === 'predict') {
                     figma.viewport.scrollAndZoomIntoView([layer]);
                 }
 
-                if (msg.type === 'cancel') {
-                    figma.closePlugin();
+                if (msg.type === 'alert') {
+                    figma.notify(msg.message);
                 }
             };
         }

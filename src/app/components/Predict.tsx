@@ -1,14 +1,13 @@
 import * as React from 'react';
 import {useTheme} from '@mui/material/styles';
 import {KeyboardArrowLeft, KeyboardArrowRight} from '@mui/icons-material';
-
-import {Box, MobileStepper, Paper, Button} from '@mui/material';
+import {Box, MobileStepper, Paper, Button, AppBar, IconButton, Toolbar, Typography} from '@mui/material';
 import Detection from './Detection';
 
 function Predict(props) {
     const [activeStep, setActiveStep] = React.useState(0);
 
-    const {model, data, classesDir} = props;
+    const {model, data, classesDir, setAbleToPredict} = props;
     const theme = useTheme();
     const maxSteps = data.length;
 
@@ -22,6 +21,24 @@ function Predict(props) {
 
     return (
         <Box sx={{maxWidth: 360, flexGrow: 1}}>
+            <AppBar position="static">
+                <Toolbar variant="dense">
+                    <IconButton
+                        onClick={() => {
+                            setAbleToPredict(false);
+                        }}
+                        edge="start"
+                        color="inherit"
+                        aria-label="menu"
+                        sx={{mr: 2}}
+                    >
+                        <KeyboardArrowLeft />
+                    </IconButton>
+                    <Typography variant="subtitle1" color="inherit" component="div">
+                        {data[activeStep].path}
+                    </Typography>
+                </Toolbar>
+            </AppBar>
             <Detection item={data[activeStep]} model={model} classesDir={classesDir} />
 
             <Paper sx={{position: 'fixed', bottom: 0, left: 0, right: 0}} elevation={3}>
