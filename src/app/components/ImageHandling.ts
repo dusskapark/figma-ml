@@ -1,4 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
+import stringComparison from 'string-comparison';
+import {getOverlapSize} from 'overlap-area';
 
 export const uint8ArrayToObjectURL = (data: Uint8Array): string => {
     return URL.createObjectURL(new Blob([data], {type: 'image/png'}));
@@ -46,7 +48,7 @@ const loadImage = (img: HTMLImageElement | null) => {
 
 const predict = async (inputs: object, model: any) => {
     console.log('Running predictions...');
-    postAlert('Running predictions...');
+
     const predictions = await model.executeAsync(inputs);
     return predictions;
 };
@@ -63,7 +65,6 @@ const renderPredictions = (
     classesDir: {name: string; id: number}[]
 ) => {
     console.log('Highlighting results...');
-    postAlert('Highlighting results...');
 
     //Getting predictions
     const boxes = predictions[3].arraySync();
@@ -96,7 +97,7 @@ const renderPredictions = (
     return detectionObjects;
 };
 
-const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | null, font: string) => {
+export const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | null, font: string) => {
     const context = canvas?.getContext('2d');
     if (!context || !image) return;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -107,12 +108,20 @@ const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | 
     return context;
 };
 
-const drawBoxes = (detections, context, font?: string, lineWidth?: number, color?: string) => {
+const drawBoxes = (
+    detections: any[],
+    context: any,
+    font?: string,
+    lineWidth?: number,
+    color?: string,
+    ratioX?: number,
+    ratioY?: number
+) => {
     detections.forEach((item: any) => {
-        const x = item['bbox'][0];
-        const y = item['bbox'][1];
-        const width = item['bbox'][2];
-        const height = item['bbox'][3];
+        const x = item['bbox'][0] * (ratioX || 1);
+        const y = item['bbox'][1] * (ratioY || 1);
+        const width = item['bbox'][2] * (ratioX || 1);
+        const height = item['bbox'][3] * (ratioY || 1);
 
         // Draw the bounding box.
         context.strokeStyle = color || '#00FFFF';
@@ -133,25 +142,123 @@ const drawBoxes = (detections, context, font?: string, lineWidth?: number, color
             // Draw the text last to ensure it's on top.
             context.fillStyle = '#000000';
             context.fillText(content, x, y);
+
             return context;
         }
     });
+};
+
+interface Component {
+    id: string;
+    bbox: number[];
+    label: string;
+}
+
+interface Components extends Array<Component> {}
+
+export interface Item {
+    id: string;
+    width: number;
+    height: number;
+    path: string;
+    data: Uint8Array;
+    components: {id: string; bbox: number[]; label: string}[];
+}
+
+export interface Items extends Array<Item> {}
+
+//BoxMatcher 코드 시작
+
+const cosine = stringComparison.cosine;
+
+const boxArea = ([, , w, h]) => {
+    return w * h;
+};
+
+const computeOverlappingArea = ([x1, y1, w1, h1], [x2, y2, w2, h2]) => {
+    const points1 = [
+        [x1, y1],
+        [x1 + w1, y1],
+        [x1 + w1, y1 + h1],
+        [x1, y1 + h1],
+    ];
+
+    const points2 = [
+        [x2, y2],
+        [x2 + w2, y2],
+        [x2 + w2, y2 + h2],
+        [x2, y2 + h2],
+    ];
+
+    return getOverlapSize(points1, points2);
+};
+
+const computeIoU = (component, detection) => {
+    const overlap = computeOverlappingArea(component.bbox, detection.bbox);
+    const union = boxArea(component.bbox) + boxArea(detection.bbox);
+
+    return overlap / (union - overlap);
+};
+
+export const matchBoxes = (components, detections) => {
+    detections.forEach((detection) => {
+        components.forEach((component) => {
+            const iou = computeIoU(component, detection);
+            const similarity = cosine.similarity(component.label, detection.label);
+            if (iou >= 0.5) {
+                detection['iou'] = iou;
+                detection['labelSimilarity'] = similarity;
+                detection['design'] = component;
+            }
+        });
+    });
+
+    return detections;
+};
+
+const drawCorrection = (matched) => {
+    const corrections: any = [];
+
+    matched.forEach((match) => {
+        !match.iou ? corrections.push(match) : match.labelSimilarity < 0.5 ? corrections.push(match) : null;
+    });
+    return corrections;
 };
 
 export const runPredict = async (
     image: HTMLImageElement | null,
     c: HTMLCanvasElement | null,
     model: any,
-    classesDir: {name: string; id: number}[]
+    classesDir: {name: string; id: number}[],
+    components: Components,
+    width: number,
+    height: number
 ) => {
     try {
         const font = '16px sans-serif';
         const context = drawCanvas(image, c, font);
+
+        postAlert('Getting Components from Figma');
+
+        const resizeX = c.width / width;
+        const resizeY = c.height / height;
+        console.log('components: ', components);
+        drawBoxes(components, context, null, 1, '#FFA500', resizeX, resizeY);
+
+        // Draw Prediction
+        postAlert('Predicting...');
+
         const expandedimg = loadImage(image);
         const predictions = await predict(expandedimg, model);
         const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
         console.log('interpreted: ', detections);
-        drawBoxes(detections, context, null, 1, '#00FFFF');
+        drawBoxes(detections, context, null, 1, '#00FFFF', null, null);
+
+        // Matched designs and predictions
+        const matched = matchBoxes(components, detections);
+        const corrections = drawCorrection(matched);
+        console.log('corrections: ', corrections);
+        drawBoxes(corrections, context, null, 1, '#FF0000');
     } catch (e) {
         console.log(e);
     }

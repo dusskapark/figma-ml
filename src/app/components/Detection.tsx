@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {uint8ArrayToObjectURL, runPredict} from './ImageHandling';
+import {uint8ArrayToObjectURL, runPredict, Item} from './ImageHandling';
 
 const Detection = (props: {item; model; classesDir}) => {
     const [imgId, setImgId] = React.useState(null);
@@ -7,11 +7,20 @@ const Detection = (props: {item; model; classesDir}) => {
     const imgRef = React.useRef<HTMLImageElement>(null);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-    const handleImgLoad = (id: string) => {
+    const handleImgLoad = async (item: Item) => {
         console.log('image loaded...');
-        if (imgId !== id) {
-            runPredict(imgRef.current, canvasRef.current, model, classesDir);
-            setImgId(id);
+        if (imgId !== item.id) {
+            await runPredict(
+                imgRef.current,
+                canvasRef.current,
+                model,
+                classesDir,
+                item.components,
+                item.width,
+                item.height
+            );
+
+            setImgId(item.id);
         }
     };
 
@@ -20,7 +29,7 @@ const Detection = (props: {item; model; classesDir}) => {
             <img
                 ref={imgRef}
                 style={{position: 'absolute'}}
-                onLoad={() => handleImgLoad(item.id)}
+                onLoad={() => handleImgLoad(item)}
                 src={uint8ArrayToObjectURL(item.data)}
                 alt={item.path}
                 id={item.id}

@@ -108,9 +108,16 @@ function toAndroidResourceName(name: string): string {
     name = name.toLowerCase();
     return name === '' ? 'untitled' : name;
 }
-if (figma.command === 'model') {
-    figma.closePlugin('TBD');
-}
+
+// if (figma.command === 'model') {
+//     const currentPage = figma.currentPage;
+//     const selectedLayers = currentPage.selection;
+
+//     selectedLayers.forEach((node) => {
+//         console.log(ExtractComponents(node));
+//     });
+//     figma.closePlugin('TBD');
+// }
 if (figma.command === 'predict') {
     const currentPage = figma.currentPage;
     const selectedLayers = currentPage.selection;
@@ -161,7 +168,7 @@ if (figma.command === 'predict') {
                 }
 
                 if (msg.type === 'alert') {
-                    figma.notify(msg.message);
+                    figma.notify(msg.message, {timeout: 1000});
                 }
             };
         }
