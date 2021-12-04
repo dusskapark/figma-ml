@@ -101,10 +101,6 @@ export const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasEle
     const context = canvas?.getContext('2d');
     if (!context || !image) return;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    // Font options.
-    context.font = font;
-    context.textBaseline = 'top';
     return context;
 };
 
@@ -117,31 +113,39 @@ const drawBoxes = (
     ratioX?: number,
     ratioY?: number
 ) => {
-    detections.forEach((item: any) => {
+    detections.forEach((item: any, i: number) => {
         const x = item['bbox'][0] * (ratioX || 1);
         const y = item['bbox'][1] * (ratioY || 1);
         const width = item['bbox'][2] * (ratioX || 1);
         const height = item['bbox'][3] * (ratioY || 1);
 
-        // Draw the bounding box.
-        context.strokeStyle = color || '#00FFFF';
-        context.lineWidth = lineWidth || 4;
-        context.strokeRect(x, y, width, height);
-
         if (!font) {
+            // Draw the bounding box.
+            context.strokeStyle = color || '#00FFFF';
+            context.lineWidth = lineWidth || 4;
+            context.strokeRect(x, y, width, height);
             return context;
         } else {
-            const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
-            // Draw the label background.
-            context.fillStyle = color || '#00FFFF';
+            // const content = item['label'] + ' ' + (100 * item['score']).toFixed(2) + '%';
 
-            const textWidth = context.measureText(content).width;
-            const textHeight = parseInt(font, 10); // base 10
-            context.fillRect(x, y, textWidth + 4, textHeight + 4);
+            // Font options.
+            context.font = font;
+            context.textBaseline = 'middle';
+            context.textAlign = 'center';
+
+            const textHeight = parseInt(font, 10) / 2; // base 10
+            context.beginPath();
+            context.strokeStyle = color || '#00FFFF';
+            context.arc(x + textHeight, y + textHeight, textHeight, 0, 2 * Math.PI);
+
+            context.stroke();
+            context.fillStyle = color || '#00FFFF';
+            context.fill();
 
             // Draw the text last to ensure it's on top.
-            context.fillStyle = '#000000';
-            context.fillText(content, x, y);
+            context.fillStyle = '#FFFFFF';
+            const number = i + 1;
+            context.fillText(number, x + textHeight, y + textHeight);
 
             return context;
         }
@@ -243,7 +247,7 @@ export const runPredict = async (
         const resizeX = c.width / width;
         const resizeY = c.height / height;
         console.log('components: ', components);
-        drawBoxes(components, context, null, 1, '#FFA500', resizeX, resizeY);
+        drawBoxes(components, context, null, 2, '#FFA500', resizeX, resizeY);
 
         // Draw Prediction
         postAlert('Predicting...');
@@ -252,13 +256,13 @@ export const runPredict = async (
         const predictions = await predict(expandedimg, model);
         const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
         console.log('interpreted: ', detections);
-        drawBoxes(detections, context, null, 1, '#00FFFF', null, null);
+        drawBoxes(detections, context, null, 2, '#00FFFF', null, null);
 
         // Matched designs and predictions
         const matched = matchBoxes(components, detections);
         const corrections = drawCorrection(matched);
         console.log('corrections: ', corrections);
-        drawBoxes(corrections, context, null, 1, '#FF0000');
+        drawBoxes(corrections, context, font, null, '#FF0000');
     } catch (e) {
         console.log(e);
     }
