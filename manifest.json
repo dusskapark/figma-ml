@@ -4,9 +4,6 @@
     "api": "1.0.0",
     "main": "dist/code.js",
     "ui": "dist/ui.html",
-    "menu": [
-        {"name": "Select a Model", "command": "model"},
-        {"name": "Predict", "command": "predict"}
-    ],
+    "menu": [{"name": "Predict", "command": "predict"}],
     "editorType": ["figma"]
 }
