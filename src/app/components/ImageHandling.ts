@@ -1,4 +1,3 @@
-import * as tf from '@tensorflow/tfjs';
 import stringComparison from 'string-comparison';
 import {getOverlapSize} from 'overlap-area';
 
@@ -38,6 +37,8 @@ const postAlert = (message: string) => {
 };
 
 const loadImage = (img: HTMLImageElement | null) => {
+    const newWindowObject = window as any;
+    const tf = newWindowObject.tf;
     if (!img) return;
     console.log('Pre-processing image...');
 
@@ -97,7 +98,7 @@ const renderPredictions = (
     return detectionObjects;
 };
 
-export const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | null, font: string) => {
+export const drawCanvas = (image: HTMLImageElement | null, canvas: HTMLCanvasElement | null) => {
     const context = canvas?.getContext('2d');
     if (!context || !image) return;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -240,7 +241,7 @@ export const runPredict = async (
 ) => {
     try {
         const font = '16px sans-serif';
-        const context = drawCanvas(image, c, font);
+        const context = drawCanvas(image, c);
 
         postAlert('Getting Components from Figma');
 

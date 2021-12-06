@@ -5,9 +5,6 @@ import {Box, CircularProgress} from '@mui/material';
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
 import Predict from './Predict';
-import * as tf from '@tensorflow/tfjs';
-
-tf.setBackend('webgl');
 
 declare function require(path: string): any;
 
@@ -18,11 +15,15 @@ const App = () => {
     const [model, setModel] = React.useState(null);
     const [classesDir, setClassesDir] = React.useState(null);
 
-    const loadModel = async (selected: string) => {
-        const baseURL = 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/';
+    const newWindowObject = window as any;
+    let tf = newWindowObject.tf;
+
+    const loadModel = async () => {
+        console.log(tf);
+        const baseURL = 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO';
         try {
-            const loadedModel = await tf.loadGraphModel(baseURL + selected + '/model.json');
-            const classesDir = await axios.get(baseURL + selected + '/label_map.json');
+            const loadedModel = await tf.loadGraphModel(baseURL + '/model.json');
+            const classesDir = await axios.get(baseURL + '/label_map.json');
 
             setModel(loadedModel);
             setClassesDir(classesDir.data);
@@ -89,7 +90,7 @@ const App = () => {
                 const png = await pluginMessage.exportImages;
                 setAssets(png);
                 setCheckItems(createIDArray(png));
-                loadModel('RICO');
+                loadModel();
             }
         };
     }, []);
