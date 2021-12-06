@@ -1,9 +1,29 @@
-# Figma Plugin React Template
+<p align="center">
+  <a href="#">
+    <img alt="Figma ML" src="public/file-cover.png" />
+  </a>
+</p>
+<h1 align="center">
+  Figma ML
+</h1>
 
-![62862431-71537f00-bd0e-11e9-85db-d97c0fb729a4](https://user-images.githubusercontent.com/16322616/62862692-46b5f600-bd0f-11e9-93b0-75955d1de8f3.png)
+<h3 align="center">
+  A Design System Plugin Made with TensorFlow JS - like spell check for design systems
+</h3>
+<div align="center">
+	<a href="https://github.com/dusskapark/figma-ml/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/dusskapark/figma-ml"></a>
+	<a href="https://github.com/dusskapark/figma-ml/network"><img alt="GitHub forks" src="https://img.shields.io/github/forks/dusskapark/figma-ml"></a>
+	<a href="https://github.com/dusskapark/figma-ml/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dusskapark/figma-ml"></a>
+</div>
 
+## Overview
 
-This template contains the react example as shown on [Figma Docs](https://www.figma.com/plugin-docs/intro/), with some structural changes and extra tooling.
+A project using [TensorFlow JS](https://www.tensorflow.org/js) to create the `spell check` of design systems, that helps designers by keep-watching numerous design elements instead of humans. The best way to illustrate this is to see it in action via the animation below:
+
+[**Demo (Youtube)**](https://youtu.be/yUV5dVboGcA) 
+
+[![Demo](public/socialMediaGraphic.gif)](https://youtu.be/yUV5dVboGcA) 
+
 
 ## Quickstart
 * Run `yarn` to install dependencies.
@@ -22,10 +42,7 @@ This repo is using:
 
 ## Contributors 
 
-- [JooHyung Park](https://gist.github.com/dusskapark)
-- [JinJae Lee]()
-- [JongHee Woo]()
-
-## Communication channel 
-
-- Kakaotalk
+- [JooHyung Park](https://github.com/dusskapark)
+- [JeongHyun Yoon](https://github.com/ave10987)
+- [JinJae Lee](https://github.com/jinbread)
+- [JongHee Woo](https://github.com/JongheeWoo)
