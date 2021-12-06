@@ -4,7 +4,7 @@
   </a>
 </p>
 <h1 align="center">
-  Figma ML
+  <img alt="Figma ML" src="public/logo.png" /><br/>Figma ML
 </h1>
 
 <h3 align="center">
@@ -18,11 +18,13 @@
 
 ## Overview
 
-A project using [TensorFlow JS](https://www.tensorflow.org/js) to create the `spell check` of design systems, that helps designers by keep-watching numerous design elements instead of humans. The best way to illustrate this is to see it in action via the animation below:
+A project using [TensorFlow JS](https://www.tensorflow.org/js) to create the `spell check` of design systems, that helps designers by keep-watching numerous design elements instead of humans. You can install and try this on the Figma Community [here](https://www.figma.com/community/plugin/1049316538308913961/Figma-ML). 
 
-[**Demo (Youtube)**](https://youtu.be/yUV5dVboGcA) 
+The best way to illustrate this is to see it in action via the animation below:
 
 [![Demo](public/socialMediaGraphic.gif)](https://youtu.be/yUV5dVboGcA) 
+
+
 
 
 ## Quickstart
