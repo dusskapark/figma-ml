@@ -37,7 +37,9 @@ The best way to illustrate this is to see it in action via the animation below:
 ⭐ Read more on the [Figma API Overview](https://www.figma.com/plugin-docs/api/api-overview/).
 
 ## Toolings
-This repo is using:
+
+This plugin is built using [Create Figma Plugin](https://yuanqing.github.io/create-figma-plugin/) by [Yuan Qing Lim](https://github.com/yuanqing). It's an excellent boilerplate for new Figma plugins and includes a ton of useful utilities. Check out the Figma plugin API docs to learn more about writing plugins. This repo is using:
+
 * React + Webpack
 * TypeScript
 * Prettier precommit hook
