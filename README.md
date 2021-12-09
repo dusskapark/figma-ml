@@ -38,7 +38,7 @@ The best way to illustrate this is to see it in action via the animation below:
 
 ## Toolings
 
-This plugin is built using [Create Figma Plugin](https://yuanqing.github.io/create-figma-plugin/) by [Yuan Qing Lim](https://github.com/yuanqing). It's an excellent boilerplate for new Figma plugins and includes a ton of useful utilities. Check out the Figma plugin API docs to learn more about writing plugins. This repo is using:
+This plugin is built using [Figma plugin React Template](https://github.com/nirsky/figma-plugin-react-template) by [Nir Hadassi](https://github.com/nirsky). It's an excellent boilerplate for new Figma plugins and includes a ton of useful utilities. Check out the Figma plugin API docs to learn more about writing plugins. This repo is using:
 
 * React + Webpack
 * TypeScript
