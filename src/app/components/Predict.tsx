@@ -7,7 +7,7 @@ import Detection from './Detection';
 function Predict(props) {
     const [activeStep, setActiveStep] = React.useState(0);
 
-    const {model, data, classesDir, setAbleToPredict} = props;
+    const {model, data, classesDir, modelLayer, setAbleToPredict} = props;
     const theme = useTheme();
     const maxSteps = data.length;
 
@@ -39,7 +39,7 @@ function Predict(props) {
                     </Typography>
                 </Toolbar>
             </AppBar>
-            <Detection item={data[activeStep]} model={model} classesDir={classesDir} />
+            <Detection item={data[activeStep]} model={model} classesDir={classesDir} modelLayer={modelLayer} />
 
             <Paper sx={{position: 'fixed', bottom: 0, left: 0, right: 0}} elevation={3}>
                 <MobileStepper

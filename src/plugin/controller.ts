@@ -108,69 +108,101 @@ function toAndroidResourceName(name: string): string {
     name = name.toLowerCase();
     return name === '' ? 'untitled' : name;
 }
+interface Model {
+    name: string;
+    model: string;
+    label_map: string;
+    saved_model_cli: {
+        boxes: number;
+        scores: number;
+        classes: number;
+    };
+}
 
-// if (figma.command === 'model') {
-//     const currentPage = figma.currentPage;
-//     const selectedLayers = currentPage.selection;
+const defaultModel: Model = {
+    name: 'Rico',
+    model: 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/model.json',
+    label_map: 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/label_map.json',
+    saved_model_cli: {
+        boxes: 3,
+        scores: 2,
+        classes: 1,
+    },
+};
 
-//     selectedLayers.forEach((node) => {
-//         console.log(ExtractComponents(node));
-//     });
-//     figma.closePlugin('TBD');
-// }
-if (figma.command === 'predict') {
-    const currentPage = figma.currentPage;
-    const selectedLayers = currentPage.selection;
+async function main() {
+    const filename = toAndroidResourceName(figma.root.name);
 
-    // Get all exportable layers
-    let exportableLayers: any[] = [];
-    if (selectedLayers.length === 0) {
-        figma.closePlugin('Please select at least 1 layer.');
-    } else {
-        selectedLayers.forEach((layer) => {
-            if (layer.type === 'SLICE' || (<ExportMixin>layer).exportSettings.length > 0) {
-                exportableLayers.push(layer);
-            }
-            if (layer.type === 'GROUP') {
-                exportableLayers = exportableLayers.concat(
-                    (<ChildrenMixin>layer).findAll(
-                        (child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0
-                    )
-                );
-            }
-        });
+    // Check a currently loaded model. If undifined, set the default model.
+    const current = await figma.clientStorage.getAsync(filename);
+    const current_model = !current ? defaultModel : current;
 
-        if (exportableLayers.length === 0) {
-            figma.closePlugin('No exportable layers in document.');
+    // update Client Storage
+    await figma.clientStorage.setAsync(filename, current_model);
+
+    if (figma.command === 'model') {
+        // figma.showUI(__html__);
+        // figma.ui.postMessage({
+        //     type: 'model',
+        //     model: current_model,
+        // });
+    }
+    if (figma.command === 'predict') {
+        const currentPage = figma.currentPage;
+        const selectedLayers = currentPage.selection;
+
+        // Get all exportable layers
+        let exportableLayers: any[] = [];
+        if (selectedLayers.length === 0) {
+            figma.closePlugin('Please select at least 1 layer.');
         } else {
-            Promise.all(exportableLayers.map((layer) => getExportImagesFromLayer(layer)))
-                .then((exportImages) => {
-                    // const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
-                    // figma.showUI(__html__, {width: 300, height: uiHeight});
-                    figma.showUI(__html__, {width: 360, height: 640 + 48 + 48});
-                    figma.ui.postMessage({
-                        type: 'export-png',
-                        exportImages: exportImages,
+            selectedLayers.forEach((layer) => {
+                if (layer.type === 'SLICE' || (<ExportMixin>layer).exportSettings.length > 0) {
+                    exportableLayers.push(layer);
+                }
+                if (layer.type === 'GROUP') {
+                    exportableLayers = exportableLayers.concat(
+                        (<ChildrenMixin>layer).findAll(
+                            (child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0
+                        )
+                    );
+                }
+            });
+
+            if (exportableLayers.length === 0) {
+                figma.closePlugin('No exportable layers in document.');
+            } else {
+                Promise.all(exportableLayers.map((layer) => getExportImagesFromLayer(layer)))
+                    .then((exportImages) => {
+                        // const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
+                        // figma.showUI(__html__, {width: 300, height: uiHeight});
+                        figma.showUI(__html__, {width: 360, height: 640 + 48 + 48});
+                        figma.ui.postMessage({
+                            type: 'export-png',
+                            exportImages: exportImages,
+                            current_model: current_model,
+                        });
+                    })
+                    .catch((error) => {
+                        figma.closePlugin(error.message);
                     });
-                })
-                .catch((error) => {
-                    figma.closePlugin(error.message);
-                });
 
-            figma.ui.onmessage = (msg) => {
-                // Show layer
-                if (msg.type === 'showLayer') {
-                    const layerId = msg.id;
-                    const layer = figma.getNodeById(layerId);
-                    const page = getParentPage(layer);
-                    figma.currentPage = page;
-                    figma.viewport.scrollAndZoomIntoView([layer]);
-                }
+                figma.ui.onmessage = (msg) => {
+                    // Show layer
+                    if (msg.type === 'showLayer') {
+                        const layerId = msg.id;
+                        const layer = figma.getNodeById(layerId);
+                        const page = getParentPage(layer);
+                        figma.currentPage = page;
+                        figma.viewport.scrollAndZoomIntoView([layer]);
+                    }
 
-                if (msg.type === 'alert') {
-                    figma.notify(msg.message, {timeout: 1000});
-                }
-            };
+                    if (msg.type === 'alert') {
+                        figma.notify(msg.message, {timeout: 1000});
+                    }
+                };
+            }
         }
     }
 }
+main();

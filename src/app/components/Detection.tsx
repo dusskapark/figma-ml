@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {uint8ArrayToObjectURL, runPredict, Item} from './ImageHandling';
 
-const Detection = (props: {item; model; classesDir}) => {
+const Detection = (props: {item; model; classesDir; modelLayer}) => {
     const [imgId, setImgId] = React.useState(null);
-    const {item, model, classesDir} = props;
+    const {item, model, classesDir, modelLayer} = props;
     const imgRef = React.useRef<HTMLImageElement>(null);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -15,6 +15,7 @@ const Detection = (props: {item; model; classesDir}) => {
                 canvasRef.current,
                 model,
                 classesDir,
+                modelLayer,
                 item.components,
                 item.width,
                 item.height

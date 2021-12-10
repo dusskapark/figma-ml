@@ -14,19 +14,30 @@ const App = () => {
     const [ableToPredict, setAbleToPredict] = React.useState(false);
     const [model, setModel] = React.useState(null);
     const [classesDir, setClassesDir] = React.useState(null);
+    const [modelLayer, setModelLayer] = React.useState(null);
 
     const newWindowObject = window as any;
     let tf = newWindowObject.tf;
 
-    const loadModel = async () => {
-        console.log(tf);
-        const baseURL = 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO';
+    interface Model {
+        name: string;
+        model: string;
+        label_map: string;
+        saved_model_cli: {
+            boxes: number;
+            scores: number;
+            classes: number;
+        };
+    }
+
+    const loadModel = async (model: Model) => {
         try {
-            const loadedModel = await tf.loadGraphModel(baseURL + '/model.json');
-            const classesDir = await axios.get(baseURL + '/label_map.json');
+            const loadedModel = await tf.loadGraphModel(model.model);
+            const classesDir = await axios.get(model.label_map);
 
             setModel(loadedModel);
             setClassesDir(classesDir.data);
+            setModelLayer(model.saved_model_cli);
         } catch (e) {
             console.log(e);
         }
@@ -88,9 +99,17 @@ const App = () => {
             // Export PNG
             if (pluginMessage.type === 'export-png') {
                 const png = await pluginMessage.exportImages;
+                const current_model = await pluginMessage.current_model;
+
+                console.log(current_model);
+
                 setAssets(png);
                 setCheckItems(createIDArray(png));
-                loadModel();
+                loadModel(current_model);
+            }
+            if (pluginMessage.type === 'model') {
+                const current_model = await pluginMessage.current_model;
+                console.log(current_model);
             }
         };
     }, []);
@@ -110,6 +129,7 @@ const App = () => {
                         data={handleProps(checkItems, assets)}
                         model={model}
                         classesDir={classesDir}
+                        modelLayer={modelLayer}
                         setAbleToPredict={setAbleToPredict}
                     />
                 </React.Fragment>

@@ -63,14 +63,19 @@ const renderPredictions = (
     predictions: any,
     width: number,
     height: number,
-    classesDir: {name: string; id: number}[]
+    classesDir: {name: string; id: number}[],
+    modelLayer: {
+        boxes: number;
+        scores: number;
+        classes: number;
+    }
 ) => {
     console.log('Highlighting results...');
 
     //Getting predictions
-    const boxes = predictions[3].arraySync();
-    const scores = predictions[2].arraySync();
-    const classes = predictions[1].dataSync();
+    const boxes = predictions[modelLayer.boxes].arraySync();
+    const scores = predictions[modelLayer.scores].arraySync();
+    const classes = predictions[modelLayer.classes].dataSync();
 
     let detectionObjects: any = [];
 
@@ -235,6 +240,11 @@ export const runPredict = async (
     c: HTMLCanvasElement | null,
     model: any,
     classesDir: {name: string; id: number}[],
+    modelLayer: {
+        boxes: number;
+        scores: number;
+        classes: number;
+    },
     components: Components,
     width: number,
     height: number
@@ -255,7 +265,13 @@ export const runPredict = async (
 
         const expandedimg = loadImage(image);
         const predictions = await predict(expandedimg, model);
-        const detections: any = renderPredictions(predictions, image?.width || 0, image?.height || 0, classesDir);
+        const detections: any = renderPredictions(
+            predictions,
+            image?.width || 0,
+            image?.height || 0,
+            classesDir,
+            modelLayer
+        );
         console.log('interpreted: ', detections);
         drawBoxes(detections, context, null, 2, '#00FFFF', null, null);
 
