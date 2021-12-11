@@ -5,6 +5,7 @@ import {Box, CircularProgress} from '@mui/material';
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
 import Predict from './Predict';
+import Connect from './Connect';
 
 declare function require(path: string): any;
 
@@ -15,6 +16,8 @@ const App = () => {
     const [model, setModel] = React.useState(null);
     const [classesDir, setClassesDir] = React.useState(null);
     const [modelLayer, setModelLayer] = React.useState(null);
+    const [mode, setMode] = React.useState(null);
+    const [config, setConfig] = React.useState(null);
 
     const newWindowObject = window as any;
     let tf = newWindowObject.tf;
@@ -90,8 +93,6 @@ const App = () => {
         return images;
     };
 
-    const isReady = !!model && !!classesDir && !!assets;
-
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event: any) => {
@@ -100,40 +101,32 @@ const App = () => {
             if (pluginMessage.type === 'export-png') {
                 const png = await pluginMessage.exportImages;
                 const current_model = await pluginMessage.current_model;
-
-                console.log(current_model);
-
+                setMode('export-png');
                 setAssets(png);
                 setCheckItems(createIDArray(png));
                 loadModel(current_model);
             }
             if (pluginMessage.type === 'model') {
                 const current_model = await pluginMessage.current_model;
-                console.log(current_model);
+                setConfig(current_model);
+                setMode('model');
             }
         };
     }, []);
 
+    const isReady = !!model && !!classesDir && !!assets;
+
     return (
         <div id="app">
-            {/* Loading */}
-            {!isReady ? (
+            {mode === 'model' ? (
+                <Connect config={config} />
+            ) : !isReady ? (
                 <React.Fragment>
                     <Box p={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
                         <CircularProgress />
                     </Box>
                 </React.Fragment>
-            ) : ableToPredict ? (
-                <React.Fragment>
-                    <Predict
-                        data={handleProps(checkItems, assets)}
-                        model={model}
-                        classesDir={classesDir}
-                        modelLayer={modelLayer}
-                        setAbleToPredict={setAbleToPredict}
-                    />
-                </React.Fragment>
-            ) : (
+            ) : !ableToPredict ? (
                 <React.Fragment>
                     <div id="content">
                         {assets.map(
@@ -205,6 +198,16 @@ const App = () => {
                             Next
                         </button>
                     </footer>
+                </React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <Predict
+                        data={handleProps(checkItems, assets)}
+                        model={model}
+                        classesDir={classesDir}
+                        modelLayer={modelLayer}
+                        setAbleToPredict={setAbleToPredict}
+                    />
                 </React.Fragment>
             )}
         </div>

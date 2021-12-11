@@ -141,11 +141,11 @@ async function main() {
     await figma.clientStorage.setAsync(filename, current_model);
 
     if (figma.command === 'model') {
-        // figma.showUI(__html__);
-        // figma.ui.postMessage({
-        //     type: 'model',
-        //     model: current_model,
-        // });
+        figma.showUI(__html__, {width: 360, height: 480});
+        figma.ui.postMessage({
+            type: 'model',
+            current_model: current_model,
+        });
     }
     if (figma.command === 'predict') {
         const currentPage = figma.currentPage;
@@ -199,6 +199,11 @@ async function main() {
 
                     if (msg.type === 'alert') {
                         figma.notify(msg.message, {timeout: 1000});
+                    }
+
+                    if (msg.type === 'config-model') {
+                        const model_value = msg.values;
+                        console.log('here: ', model_value);
                     }
                 };
             }
