@@ -202,7 +202,7 @@ async function main() {
                     }
 
                     if (msg.type === 'config-model') {
-                        const model_value = msg.values;
+                        const model_value = msg.message;
                         console.log('here: ', model_value);
                     }
                 };

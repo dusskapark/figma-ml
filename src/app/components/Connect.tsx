@@ -15,17 +15,9 @@ interface Model {
     };
 }
 
-const validationSchema = yup.object({
-    name: yup.string().required(),
-    model: yup.string().url().required('URL is required'),
-    label_map: yup.string().url().required('URL is required'),
-    boxes: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
-    scores: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
-    classes: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
-});
-
 const Connect = (props) => {
     const config: Model = props.config;
+
     const formik = useFormik({
         initialValues: {
             name: config.name,
@@ -35,18 +27,27 @@ const Connect = (props) => {
             scores: config.saved_model_cli.scores,
             classes: config.saved_model_cli.classes,
         },
-        validationSchema: validationSchema,
-        onSubmit: (values) => {
-            console.log(values);
+        validationSchema: yup.object({
+            name: yup.string().required(),
+            model: yup.string().url().required('URL is required'),
+            label_map: yup.string().url().required('URL is required'),
+            boxes: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
+            scores: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
+            classes: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
+        }),
+        onSubmit: (values, actions) => {
+            actions.setSubmitting(true);
             parent.postMessage(
                 {
                     pluginMessage: {
                         type: 'config-model',
-                        values: JSON.stringify(values),
+                        message: JSON.stringify(values),
                     },
                 },
                 '*'
             );
+            console.log(values);
+            actions.setSubmitting(false);
         },
     });
 

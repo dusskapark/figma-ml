@@ -24,11 +24,11 @@ export const uint8ArrayToObjectURL = (data: Uint8Array): string => {
 //     return assets;
 // };
 
-const postAlert = (message: string) => {
+export const postAlert = (type: string, message: any) => {
     parent.postMessage(
         {
             pluginMessage: {
-                type: 'alert',
+                type: type,
                 message: message,
             },
         },
@@ -253,7 +253,7 @@ export const runPredict = async (
         const font = '16px sans-serif';
         const context = drawCanvas(image, c);
 
-        postAlert('Getting Components from Figma');
+        postAlert('alert', 'Getting Components from Figma');
 
         const resizeX = c.width / width;
         const resizeY = c.height / height;
@@ -261,7 +261,7 @@ export const runPredict = async (
         drawBoxes(components, context, null, 2, '#FFA500', resizeX, resizeY);
 
         // Draw Prediction
-        postAlert('Predicting...');
+        postAlert('alert', 'Predicting...');
 
         const expandedimg = loadImage(image);
         const predictions = await predict(expandedimg, model);
