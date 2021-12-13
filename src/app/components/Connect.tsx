@@ -35,8 +35,7 @@ const Connect = (props) => {
             scores: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
             classes: yup.number().max(99, 'The layer number cannot exceed two digits.').required(),
         }),
-        onSubmit: (values, actions) => {
-            actions.setSubmitting(true);
+        onSubmit: (values) => {
             parent.postMessage(
                 {
                     pluginMessage: {
@@ -46,13 +45,11 @@ const Connect = (props) => {
                 },
                 '*'
             );
-            console.log(values);
-            actions.setSubmitting(false);
         },
     });
 
     return (
-        <Box margin={2} component="form" onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit}>
             <Box padding={2}>
                 <TextField
                     required
@@ -139,11 +136,11 @@ const Connect = (props) => {
             <Box padding={2}>
                 <Box marginTop={2}>
                     <Button size="large" variant="contained" color="primary" fullWidth type="submit">
-                        Update Model
+                        Update
                     </Button>
                 </Box>
             </Box>
-        </Box>
+        </form>
     );
 };
 

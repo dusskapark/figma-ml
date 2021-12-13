@@ -119,7 +119,9 @@ const App = () => {
     return (
         <div id="app">
             {mode === 'model' ? (
-                <Connect config={config} />
+                <Box p={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                    <Connect config={config} />
+                </Box>
             ) : !isReady ? (
                 <React.Fragment>
                     <Box p={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
