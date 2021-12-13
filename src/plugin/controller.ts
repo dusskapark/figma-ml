@@ -130,6 +130,21 @@ const defaultModel: Model = {
     },
 };
 
+const updateModel = (message) => {
+    let msg = JSON.parse(message);
+    const model: Model = {
+        name: msg.name,
+        model: msg.model,
+        label_map: msg.label_map,
+        saved_model_cli: {
+            boxes: msg.boxes,
+            scores: msg.scores,
+            classes: msg.classes,
+        },
+    };
+    return model;
+};
+
 async function main() {
     const filename = toAndroidResourceName(figma.root.name);
 
@@ -146,6 +161,14 @@ async function main() {
             type: 'model',
             current_model: current_model,
         });
+        figma.ui.onmessage = async (msg) => {
+            if (msg.type === 'config-model') {
+                const model_value = updateModel(msg.message);
+                console.log('plugin: ', model_value);
+                await figma.clientStorage.setAsync(filename, model_value);
+                figma.notify(`${model_value.name} is set as a model`, {timeout: 1000});
+            }
+        };
     }
     if (figma.command === 'predict') {
         const currentPage = figma.currentPage;
@@ -199,11 +222,6 @@ async function main() {
 
                     if (msg.type === 'alert') {
                         figma.notify(msg.message, {timeout: 1000});
-                    }
-
-                    if (msg.type === 'config-model') {
-                        const model_value = msg.message;
-                        console.log('here: ', model_value);
                     }
                 };
             }
