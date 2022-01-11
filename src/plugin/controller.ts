@@ -121,8 +121,9 @@ interface Model {
 
 const defaultModel: Model = {
     name: 'Rico',
-    model: 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/model.json',
-    label_map: 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/label_map.json',
+    model: 'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/mobilenet-v2-8k/model.json',
+    label_map:
+        'https://raw.githubusercontent.com/dusskapark/zeplin-ml/main/public/models/RICO/mobilenet-v2-8k/label_map.json',
     saved_model_cli: {
         boxes: 3,
         scores: 2,
