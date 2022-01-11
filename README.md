@@ -50,3 +50,9 @@ This plugin is built using [Figma plugin React Template](https://github.com/nirs
 - [JeongHyun Yoon](https://github.com/ave10987)
 - [JinJae Lee](https://github.com/jinbread)
 - [JongHee Woo](https://github.com/JongheeWoo)
+
+
+
+## License
+
+This project is licensed under the terms of the [MIT](./LICENSE.md).
