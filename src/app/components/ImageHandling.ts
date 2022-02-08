@@ -210,15 +210,26 @@ const computeIoU = (component, detection) => {
     return overlap / (union - overlap);
 };
 
+const compareSize = (component, detection) => {
+    const overall = 360 * 640;
+    const ads: number = Math.abs(boxArea(component.bbox) / overall - boxArea(detection.bbox) / overall);
+    // console.log(ads);
+    return ads;
+};
 export const matchBoxes = (components, detections) => {
     detections.forEach((detection) => {
         components.forEach((component) => {
-            const iou = computeIoU(component, detection);
-            const similarity = cosine.similarity(component.label, detection.label);
-            if (iou >= 0.5) {
-                detection['iou'] = iou;
-                detection['labelSimilarity'] = similarity;
-                detection['design'] = component;
+            // Check if the two boxes are similar in size.
+            if (compareSize(component, detection) < 0.01) {
+                const iou = computeIoU(component, detection);
+                const similarity = cosine.similarity(component.label, detection.label);
+
+                // check if two boxes overlapped and Check how similar the two labels of cosine are
+                if (iou >= 0.5) {
+                    detection['iou'] = iou;
+                    detection['labelSimilarity'] = similarity;
+                    detection['design'] = component;
+                }
             }
         });
     });
