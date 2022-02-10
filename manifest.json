@@ -6,7 +6,8 @@
     "ui": "dist/ui.html",
     "menu": [
         {"name": "Predict", "command": "predict"},
-        {"name": "Config a model", "command": "model"}
+        {"name": "Config a model", "command": "model"},
+        {"name": "Export dataset", "command": "dataset"}
     ],
     "editorType": ["figma"]
 }

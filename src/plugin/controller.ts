@@ -228,5 +228,45 @@ async function main() {
             }
         }
     }
+    if (figma.command === 'dataset') {
+        const currentPage = figma.currentPage;
+        const selectedLayers = currentPage.selection;
+
+        // Get all exportable layers
+        let exportableLayers: any[] = [];
+        if (selectedLayers.length === 0) {
+            figma.closePlugin('Please select at least 1 layer.');
+        } else {
+            selectedLayers.forEach((layer) => {
+                if (layer.type === 'SLICE' || (<ExportMixin>layer).exportSettings.length > 0) {
+                    exportableLayers.push(layer);
+                }
+                if (layer.type === 'GROUP') {
+                    exportableLayers = exportableLayers.concat(
+                        (<ChildrenMixin>layer).findAll(
+                            (child) => child.type === 'SLICE' || (<ExportMixin>child).exportSettings.length > 0
+                        )
+                    );
+                }
+            });
+
+            if (exportableLayers.length === 0) {
+                figma.closePlugin('No exportable layers in document.');
+            } else {
+                Promise.all(exportableLayers.map((layer) => getExportImagesFromLayer(layer)))
+                    .then((exportImages) => {
+                        const uiHeight = Math.min(exportableLayers.length * 48 + 16 + 48, 400);
+                        figma.showUI(__html__, {width: 360, height: uiHeight});
+                        figma.ui.postMessage({
+                            type: 'dataset',
+                            exportImages: exportImages,
+                        });
+                    })
+                    .catch((error) => {
+                        figma.closePlugin(error.message);
+                    });
+            }
+        }
+    }
 }
 main();
