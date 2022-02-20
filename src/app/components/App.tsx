@@ -1,6 +1,6 @@
 import * as React from 'react';
 import axios from 'axios';
-import {Box, CircularProgress} from '@mui/material';
+import {Box, CircularProgress, Button} from '@mui/material';
 
 import '../styles/ui.css';
 import {uint8ArrayToObjectURL} from './ImageHandling';
@@ -19,8 +19,9 @@ const App = () => {
     const [modelLayer, setModelLayer] = React.useState(null);
     const [mode, setMode] = React.useState(null);
     const [config, setConfig] = React.useState(null);
+    const [components, setComponents] = React.useState(null);
+    const [maxInstance, setMaxInstance] = React.useState(0);
     const exportButton = React.useRef<HTMLButtonElement>(null);
-
     const newWindowObject = window as any;
     let tf = newWindowObject.tf;
 
@@ -49,20 +50,29 @@ const App = () => {
     };
 
     // 체크박스 전체 단일 개체 선택
-    const handleSingleCheck = (checked: boolean, id: string) => {
+    const handleSingleCheck = (checked: boolean, id: string, multiple?: number) => {
         if (checked) {
-            setCheckItems([...checkItems, id]);
+            setCheckItems([...checkItems, {id: id, multiple: multiple}]);
         } else {
             // 체크 해제
-            setCheckItems(checkItems.filter((el) => el !== id));
+            setCheckItems(checkItems.filter((el) => el.id !== id));
         }
     };
 
-    const createIDArray = (array) => {
+    const createIDArray = (
+        array: {id: string; path?: string; data?: Uint8Array; base64?: string; children?: any[]}[]
+    ) => {
         const idArray = [];
-        array.forEach((element: {id: string; path: string; data?: Uint8Array; base64?: string}) =>
-            idArray.push(element.id)
-        );
+        setMaxInstance(checkMaxInstance(array));
+        array.forEach((element) => {
+            if (element.children != null) {
+                const multiple = Math.round(maxInstance / element.children.length);
+                idArray.push({id: element.id, multiple: multiple});
+            } else {
+                idArray.push({id: element.id});
+            }
+        });
+        console.log(idArray);
         return idArray;
     };
 
@@ -94,6 +104,11 @@ const App = () => {
 
         return images;
     };
+
+    // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     setScreens(parseInt(event.target.value));
+    // };
+
     interface Component {
         id: string;
         bbox: number[];
@@ -198,7 +213,7 @@ const App = () => {
         exportButton.current.disabled = false;
     };
 
-    function formatDate(): string {
+    const formatDate = (): string => {
         let d = new Date();
         let result = '' + d.getFullYear();
         result += (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1);
@@ -207,7 +222,18 @@ const App = () => {
         result += (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
         result += (d.getSeconds() < 10 ? '0' : '') + d.getSeconds();
         return result;
-    }
+    };
+
+    const checkMaxInstance = (array: any[]) => {
+        let maxLength = 0;
+        for (let index = 0; index < array.length; index++) {
+            let childrenLength = array[index].children.length;
+            maxLength = childrenLength > maxLength ? childrenLength : maxLength;
+        }
+        console.log(maxLength);
+        return maxLength;
+    };
+
     React.useEffect(() => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event: any) => {
@@ -231,6 +257,13 @@ const App = () => {
                 const dataset = await pluginMessage.exportImages;
                 setAssets(dataset);
                 setCheckItems(createIDArray(dataset));
+            }
+            if (pluginMessage.type === 'assets') {
+                setMode('assets');
+                const annotation = await pluginMessage.annotation;
+                setComponents(annotation);
+                console.log(createIDArray(annotation));
+                setCheckItems(createIDArray(annotation));
             }
         };
     }, []);
@@ -265,20 +298,7 @@ const App = () => {
                                         />
                                     </label>
                                     <div className="export-item__thumb">
-                                        <img
-                                            src={uint8ArrayToObjectURL(asset.data)}
-                                            onClick={() => {
-                                                parent.postMessage(
-                                                    {
-                                                        pluginMessage: {
-                                                            type: 'showLayer',
-                                                            id: asset.id,
-                                                        },
-                                                    },
-                                                    '*'
-                                                );
-                                            }}
-                                        />
+                                        <img src={uint8ArrayToObjectURL(asset.data)} />
                                     </div>
                                     <div className="type type--11-pos export-item__text">
                                         <label htmlFor={asset.id}>{asset.path}</label>
@@ -408,6 +428,94 @@ const App = () => {
                     </React.Fragment>
                 )
             ) : null}
+            {mode === 'assets'
+                ? 'done!'
+                : // components == null ? (
+                  //     <React.Fragment>
+                  //         <Box
+                  //             p={2}
+                  //             sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}
+                  //         >
+                  //             <CircularProgress />
+                  //         </Box>
+                  //     </React.Fragment>
+                  // ) : (
+                  //     <React.Fragment>
+                  //         <div id="content">
+                  //             {components.map((component, index) => (
+                  //                 <div key={index} className="export-item">
+                  //                     <label className="export-item__checkbox">
+                  //                         <input
+                  //                             type="checkbox"
+                  //                             id={component.id}
+                  //                             className="checkbox"
+                  //                             onChange={(e) =>
+                  //                                 handleSingleCheck(
+                  //                                     e.target.checked,
+                  //                                     component.id,
+                  //                                     Math.round(maxInstance / component.children.length)
+                  //                                 )
+                  //                             }
+                  //                             checked={checkItems.indexOf(component.id) !== -1 ? true : false}
+                  //                         />
+                  //                     </label>
+                  //                     <div className="export-item__thumb">
+                  //                         <img
+                  //                             src={uint8ArrayToObjectURL(component.data)}
+                  //                             onClick={() => {
+                  //                                 parent.postMessage(
+                  //                                     {
+                  //                                         pluginMessage: {
+                  //                                             type: 'showLayer',
+                  //                                             id: component.id,
+                  //                                         },
+                  //                                     },
+                  //                                     '*'
+                  //                                 );
+                  //                             }}
+                  //                         />
+                  //                     </div>
+                  //                     <div className="type type--11-pos export-item__text">
+                  //                         <label htmlFor={component.id}>{component.name}</label>
+                  //                     </div>
+                  //                     <div className="type type--11-pos export-item__text">
+                  //                         <label htmlFor={component.id}>{component.children.length}</label>
+                  //                     </div>
+                  //                     <div className="type type--11-pos export-item__text">
+                  //                         <label htmlFor={component.id}>
+                  //                             {Math.round(maxInstance / component.children.length)}
+                  //                         </label>
+                  //                     </div>
+                  //                 </div>
+                  //             ))}
+                  //         </div>
+                  //         <footer id="footer">
+                  //             <label className="selectAll__wrap">
+                  //                 <input
+                  //                     type="checkbox"
+                  //                     className="checkbox"
+                  //                     id="selectAll"
+                  //                     onChange={(e) => handleAllCheck(e.target.checked, assets)}
+                  //                     checked={checkItems.length === components.length ? true : false}
+                  //                 />
+                  //             </label>
+                  //             <div className="type type--11-pos selectAll__label">
+                  //                 <label htmlFor="selectAll">
+                  //                     {checkItems.length} / {components.length}
+                  //                 </label>
+                  //             </div>
+                  //             <Button
+                  //                 className="button"
+                  //                 onClick={() => {
+                  //                     console.log(checkItems);
+                  //                 }}
+                  //             >
+                  //                 Generate
+                  //             </Button>
+                  //         </footer>
+                  //     </React.Fragment>
+                  // )
+                  null}
         </div>
     );
 };

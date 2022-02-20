@@ -1,4 +1,4 @@
-import {ExtractComponents} from './extractComponents';
+import {ExtractComponents, toAndroidResourceName} from './extractComponents';
 
 async function getExportImagesFromLayer(layer: any) {
     let assetName = toAndroidResourceName(layer.name);
@@ -22,6 +22,30 @@ async function getExportImagesFromLayer(layer: any) {
     return images;
 }
 
+async function getExportComponentFromDocumnet(componentSet: any) {
+    let assetName = toAndroidResourceName(componentSet.name);
+
+    const children = [];
+    componentSet.children.forEach((child) => {
+        children.push({id: child.id, name: child.name});
+    });
+
+    let exportSetting: ExportSettingsImage = {
+        format: 'PNG',
+    };
+
+    const imageData = await (<ExportMixin>componentSet.defaultVariant).exportAsync(exportSetting);
+
+    const annotation = {
+        id: componentSet.id,
+        name: assetName,
+        children: children,
+        data: imageData,
+    };
+
+    return annotation;
+}
+
 function getParentPage(node: BaseNode): PageNode {
     let parent = node.parent;
     if (node.parent) {
@@ -33,81 +57,6 @@ function getParentPage(node: BaseNode): PageNode {
     return figma.currentPage;
 }
 
-function toAndroidResourceName(name: string): string {
-    name = name.substr(name.lastIndexOf('/') + 1);
-    // Latin to ascii
-    const latinToAsciiMapping = {
-        ae: 'ä|æ|ǽ',
-        oe: 'ö|œ',
-        ue: 'ü',
-        Ae: 'Ä',
-        Ue: 'Ü',
-        Oe: 'Ö',
-        A: 'À|Á|Â|Ã|Ä|Å|Ǻ|Ā|Ă|Ą|Ǎ',
-        a: 'à|á|â|ã|å|ǻ|ā|ă|ą|ǎ|ª',
-        C: 'Ç|Ć|Ĉ|Ċ|Č',
-        c: 'ç|ć|ĉ|ċ|č',
-        D: 'Ð|Ď|Đ',
-        d: 'ð|ď|đ',
-        E: 'È|É|Ê|Ë|Ē|Ĕ|Ė|Ę|Ě',
-        e: 'è|é|ê|ë|ē|ĕ|ė|ę|ě',
-        G: 'Ĝ|Ğ|Ġ|Ģ',
-        g: 'ĝ|ğ|ġ|ģ',
-        H: 'Ĥ|Ħ',
-        h: 'ĥ|ħ',
-        I: 'Ì|Í|Î|Ï|Ĩ|Ī|Ĭ|Ǐ|Į|İ',
-        i: 'ì|í|î|ï|ĩ|ī|ĭ|ǐ|į|ı',
-        J: 'Ĵ',
-        j: 'ĵ',
-        K: 'Ķ',
-        k: 'ķ',
-        L: 'Ĺ|Ļ|Ľ|Ŀ|Ł',
-        l: 'ĺ|ļ|ľ|ŀ|ł',
-        N: 'Ñ|Ń|Ņ|Ň',
-        n: 'ñ|ń|ņ|ň|ŉ',
-        O: 'Ò|Ó|Ô|Õ|Ō|Ŏ|Ǒ|Ő|Ơ|Ø|Ǿ',
-        o: 'ò|ó|ô|õ|ō|ŏ|ǒ|ő|ơ|ø|ǿ|º',
-        R: 'Ŕ|Ŗ|Ř',
-        r: 'ŕ|ŗ|ř',
-        S: 'Ś|Ŝ|Ş|Š',
-        s: 'ś|ŝ|ş|š|ſ',
-        T: 'Ţ|Ť|Ŧ',
-        t: 'ţ|ť|ŧ',
-        U: 'Ù|Ú|Û|Ũ|Ū|Ŭ|Ů|Ű|Ų|Ư|Ǔ|Ǖ|Ǘ|Ǚ|Ǜ',
-        u: 'ù|ú|û|ũ|ū|ŭ|ů|ű|ų|ư|ǔ|ǖ|ǘ|ǚ|ǜ',
-        Y: 'Ý|Ÿ|Ŷ',
-        y: 'ý|ÿ|ŷ',
-        W: 'Ŵ',
-        w: 'ŵ',
-        Z: 'Ź|Ż|Ž',
-        z: 'ź|ż|ž',
-        AE: 'Æ|Ǽ',
-        ss: 'ß',
-        IJ: 'Ĳ',
-        ij: 'ĳ',
-        OE: 'Œ',
-        f: 'ƒ',
-    };
-    for (let i in latinToAsciiMapping) {
-        let regexp = new RegExp(latinToAsciiMapping[i], 'g');
-        name = name.replace(regexp, i);
-    }
-    // Remove no ascii character
-    name = name.replace(/[^\u0020-\u007E]/g, '');
-    // Remove not support character
-    name = name.replace(/[\u0021-\u002B\u003A-\u0040\u005B-\u005E\u0060\u007B-\u007E]/g, '');
-    // Remove Unix hidden file
-    name = name.replace(/^\./, '');
-    // Remove digit
-    name = name.replace(/^\d+/, '');
-    // Replace , - . to _
-    name = name.replace(/[\u002C-\u002E\u005F]/g, '_');
-    name = name.trim();
-    // Replace space to _
-    name = name.replace(/\s+/g, '_');
-    name = name.toLowerCase();
-    return name === '' ? 'untitled' : name;
-}
 interface Model {
     name: string;
     model: string;
@@ -120,14 +69,14 @@ interface Model {
 }
 
 const defaultModel: Model = {
-    name: 'Rico',
-    model: 'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-8k/web-model/model.json',
+    name: 'CLAY',
+    model: 'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-50k/web-model/model.json',
     label_map:
-        'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-8k/web-model/label_map.json',
+        'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-50k/web-model/label_map.json',
     saved_model_cli: {
         boxes: 5,
-        scores: 6,
-        classes: 3,
+        scores: 4,
+        classes: 0,
     },
 };
 
@@ -144,6 +93,35 @@ const updateModel = (message) => {
         },
     };
     return model;
+};
+
+const recursive = (nodes, components, _x: number, _y: number, compareHeight: number) => {
+    // recursive function for manipulating components
+    // pick components
+    let pick = Math.floor(Math.random() * components.length);
+    let pickedComponent: ComponentNode = components[pick];
+    let instanced: InstanceNode = pickedComponent.createInstance();
+
+    compareHeight = instanced.height > compareHeight ? instanced.height : compareHeight;
+
+    if (_x + instanced.width <= 640) {
+        // place the component
+        instanced.x = _x;
+        instanced.y = _y;
+        nodes.push(instanced);
+    } else {
+        _y = _y + compareHeight + 16;
+        compareHeight = 0;
+        instanced.x = 0;
+        instanced.y = _y;
+        nodes.push(instanced);
+    }
+    _x = _x + instanced.width + 16;
+    if (_y < 640) {
+        return recursive(nodes, components, _x, _y, compareHeight);
+    } else {
+        return nodes;
+    }
 };
 
 async function main() {
@@ -267,6 +245,53 @@ async function main() {
                     });
             }
         }
+    }
+    if (figma.command === 'assets') {
+        // Load components
+        let componentSet: any[] = [];
+        componentSet = componentSet.concat(figma.root.findAll((child) => child.type === 'COMPONENT_SET'));
+
+        if (componentSet.length === 0) {
+            figma.closePlugin('No Component in document.');
+        } else {
+            Promise.all(componentSet.map((component) => getExportComponentFromDocumnet(component)))
+                .then((annotation) => {
+                    figma.showUI(__html__, {width: 360, height: 640});
+                    figma.ui.postMessage({
+                        type: 'assets',
+                        annotation: annotation,
+                    });
+                })
+                .catch((error) => {
+                    figma.closePlugin(error.message);
+                });
+        }
+
+        figma.ui.onmessage = (msg) => {
+            if (msg.type === 'generate-assets') {
+                // create a new page
+                const newPage: PageNode = figma.createPage();
+                newPage.name = 'Figma-ML';
+                figma.currentPage = newPage;
+                // Load components
+                let components: any[] = [];
+                components = components.concat(figma.root.findAll((child) => child.type === 'COMPONENT'));
+
+                for (let index = 0; index < msg.message; index++) {
+                    // create a new frame
+                    const newFrame: FrameNode = figma.createFrame();
+                    newFrame.name = `image_${index + 1}`;
+                    newFrame.resize(640, 640);
+                    newFrame.paddingRight = 20;
+                    newFrame.x = 640 * (index % 19) + 20 * (index % 19);
+                    newFrame.y = 640 * Math.floor(index / 19) + 20 * Math.floor(index / 19);
+                    const nodes = recursive([], components, 0, 0, 0);
+                    nodes.forEach((element) => {
+                        newFrame.appendChild(element);
+                    });
+                }
+            }
+        };
     }
 }
 main();
