@@ -1,23 +1,23 @@
 const isComponent = (raw: BaseNode) => {
     if ('id' in raw && 'mainComponent' in raw) {
-        if (recursiveName(raw.mainComponent) !== undefined) {
+        if (recursiveName(raw.mainComponent, 'COMPONENT_SET') !== undefined) {
             return true;
         } else return false;
     } else return false;
 };
 
-function recursiveName(node: BaseNode) {
+function recursiveName(node: BaseNode, nodeType: string) {
     if (node.parent == null) return;
-    if (node.type == 'COMPONENT_SET') {
+    if (node.type == nodeType) {
         const label = toAndroidResourceName(node.name);
         return label;
     }
-    return recursiveName(node.parent);
+    return recursiveName(node.parent, nodeType);
 }
 
 function extractComponent(raw: any, x: number, y: number) {
     const rect = raw.absoluteRenderBounds;
-    const name = recursiveName(raw.mainComponent);
+    const name = recursiveName(raw.mainComponent, 'COMPONENT_SET');
 
     return {
         id: raw.id,

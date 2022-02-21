@@ -7,7 +7,7 @@
     "menu": [
         {"name": "Predict", "command": "predict"},
         {"name": "Config a model", "command": "model"},
-        {"name": "Generate assets(beta)", "command": "assets"},
+        {"name": "Generate assets(beta)", "command": "annotation"},
         {"name": "Export dataset(beta)", "command": "dataset"}
     ],
     "editorType": ["figma"]

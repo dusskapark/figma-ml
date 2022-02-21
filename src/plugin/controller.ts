@@ -21,14 +21,17 @@ async function getExportImagesFromLayer(layer: any) {
 
     return images;
 }
-
-async function getExportComponentFromDocumnet(componentSet: any) {
+const recursiveName = (node) => {
+    if (node.parent == null) return;
+    if (node.parent.type == 'PAGE') {
+        const label = toAndroidResourceName(node.name);
+        return label;
+    }
+    return recursiveName(node.parent);
+};
+async function getExportComponentFromDocumnet(componentSet: ComponentSetNode) {
     let assetName = toAndroidResourceName(componentSet.name);
-
-    const children = [];
-    componentSet.children.forEach((child) => {
-        children.push({id: child.id, name: child.name});
-    });
+    let pageName = recursiveName(componentSet);
 
     let exportSetting: ExportSettingsImage = {
         format: 'PNG',
@@ -39,7 +42,8 @@ async function getExportComponentFromDocumnet(componentSet: any) {
     const annotation = {
         id: componentSet.id,
         name: assetName,
-        children: children,
+        path: pageName,
+        children: componentSet.children,
         data: imageData,
     };
 
@@ -95,30 +99,57 @@ const updateModel = (message) => {
     return model;
 };
 
-const recursive = (nodes, components, _x: number, _y: number, compareHeight: number) => {
+const recursive = (
+    dataset: {id: string}[],
+    _x: number,
+    _y: number,
+    compareHeight?: number | 0,
+    node?: any[] | any[],
+    nodes?: any[] | any[]
+) => {
     // recursive function for manipulating components
-    // pick components
-    let pick = Math.floor(Math.random() * components.length);
-    let pickedComponent: ComponentNode = components[pick];
-    let instanced: InstanceNode = pickedComponent.createInstance();
 
+    // pick components
+    let pick = Math.floor(Math.random() * dataset.length);
+    let pickedComponentId = dataset[pick].id;
+    const instanced: InstanceNode = figma.getNodeById(pickedComponentId) as any;
+
+    // set initial data
     compareHeight = instanced.height > compareHeight ? instanced.height : compareHeight;
 
-    if (_x + instanced.width <= 640) {
-        // place the component
+    // place instances
+    if (_x + instanced.width <= 640 && _y + instanced.height <= 640) {
         instanced.x = _x;
         instanced.y = _y;
-        nodes.push(instanced);
-    } else {
-        _y = _y + compareHeight + 16;
-        compareHeight = 0;
+        node.push(instanced);
+
+        _x = _x + instanced.width + 16;
+    } else if (_x + instanced.width > 640 && _y + instanced.height <= 640) {
         instanced.x = 0;
-        instanced.y = _y;
-        nodes.push(instanced);
+        instanced.y = _y + compareHeight + 16;
+
+        _x = 0 + instanced.width + 16;
+        _y = _y + compareHeight + 16;
+        compareHeight = instanced.height;
+        node.push(instanced);
+    } else {
+        // push and reset arrays
+        nodes.push(node);
+        node = [];
+        instanced.x = 0;
+        instanced.y = 0;
+        node.push(instanced);
+
+        _x = 0 + instanced.width + 16;
+        _y = 0;
+        compareHeight = instanced.height;
     }
-    _x = _x + instanced.width + 16;
-    if (_y < 640) {
-        return recursive(nodes, components, _x, _y, compareHeight);
+
+    // update the dataset
+    dataset.splice(pick, 1);
+
+    if (dataset.length > 0) {
+        return recursive(dataset, _x, _y, compareHeight, node, nodes);
     } else {
         return nodes;
     }
@@ -246,7 +277,7 @@ async function main() {
             }
         }
     }
-    if (figma.command === 'assets') {
+    if (figma.command === 'annotation') {
         // Load components
         let componentSet: any[] = [];
         componentSet = componentSet.concat(figma.root.findAll((child) => child.type === 'COMPONENT_SET'));
@@ -258,7 +289,7 @@ async function main() {
                 .then((annotation) => {
                     figma.showUI(__html__, {width: 360, height: 640});
                     figma.ui.postMessage({
-                        type: 'assets',
+                        type: 'annotation',
                         annotation: annotation,
                     });
                 })
@@ -266,6 +297,19 @@ async function main() {
                     figma.closePlugin(error.message);
                 });
         }
+        const generateDataset = (data: {id: string; multiple: number; children: ComponentNode[]}[]) => {
+            const dataset = [];
+
+            data.forEach((element) => {
+                const array = element.children;
+                // for (let index = 0; index < element.multiple; index++) {
+                array.forEach((component) => {
+                    dataset.push(component);
+                });
+                // }
+            });
+            return dataset;
+        };
 
         figma.ui.onmessage = (msg) => {
             if (msg.type === 'generate-assets') {
@@ -273,23 +317,32 @@ async function main() {
                 const newPage: PageNode = figma.createPage();
                 newPage.name = 'Figma-ML';
                 figma.currentPage = newPage;
-                // Load components
-                let components: any[] = [];
-                components = components.concat(figma.root.findAll((child) => child.type === 'COMPONENT'));
 
-                for (let index = 0; index < msg.message; index++) {
-                    // create a new frame
-                    const newFrame: FrameNode = figma.createFrame();
-                    newFrame.name = `image_${index + 1}`;
-                    newFrame.resize(640, 640);
-                    newFrame.paddingRight = 20;
-                    newFrame.x = 640 * (index % 19) + 20 * (index % 19);
-                    newFrame.y = 640 * Math.floor(index / 19) + 20 * Math.floor(index / 19);
-                    const nodes = recursive([], components, 0, 0, 0);
-                    nodes.forEach((element) => {
-                        newFrame.appendChild(element);
+                // Load components
+                Promise.all(generateDataset(msg.data))
+                    .then((dataset) => {
+                        console.log(dataset);
+                        const children = recursive(dataset, 0, 0, 0, [], []);
+
+                        for (let index = 0; index < children.length; index++) {
+                            const elements = children[index];
+
+                            // create a new frame
+                            const newFrame: FrameNode = figma.createFrame();
+                            newFrame.name = `image_${index + 1}`;
+                            newFrame.resize(640, 640);
+                            newFrame.paddingRight = 20;
+                            newFrame.x = 640 * (index % 19) + 20 * (index % 19);
+                            newFrame.y = 640 * Math.floor(index / 19) + 20 * Math.floor(index / 19);
+
+                            elements.forEach((element: InstanceNode) => {
+                                newFrame.appendChild(element);
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        figma.closePlugin(error.message);
                     });
-                }
             }
         };
     }
