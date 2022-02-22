@@ -209,7 +209,7 @@ const App = () => {
         exportButton.current.disabled = true;
         const zip = new JSZip();
         for (let item of checkItems) {
-            let file = assets.filter((x) => x.id === item)[0];
+            const file = assets.filter((x) => x.id === item.id)[0];
             let xml = exportXML(file);
             console.log(file);
             zip.file(file.id + '.xml', xml);

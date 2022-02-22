@@ -112,7 +112,7 @@ const recursive = (
     // pick components
     let pick = Math.floor(Math.random() * dataset.length);
     let pickedComponentId = dataset[pick].id;
-    const instanced: InstanceNode = figma.getNodeById(pickedComponentId) as any;
+    const instanced: InstanceNode = (figma.getNodeById(pickedComponentId) as ComponentNode).createInstance();
 
     // set initial data
     compareHeight = instanced.height > compareHeight ? instanced.height : compareHeight;
