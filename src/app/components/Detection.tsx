@@ -35,10 +35,16 @@ const Detection = (props: {item; model; classesDir; modelLayer}) => {
                 alt={item.path}
                 id={item.id}
                 width="360"
-                height="640"
+                height={(item.height * 360) / item.width}
                 crossOrigin="anonymous"
             />
-            <canvas ref={canvasRef} style={{position: 'relative'}} id={`canvas_${item.id}`} width="360" height="640" />
+            <canvas
+                ref={canvasRef}
+                style={{position: 'relative'}}
+                id={`canvas_${item.id}`}
+                width="360"
+                height={(item.height * 360) / item.width}
+            />
         </div>
     );
 };

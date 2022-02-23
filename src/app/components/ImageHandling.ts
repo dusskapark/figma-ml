@@ -210,26 +210,23 @@ const computeIoU = (component, detection) => {
     return overlap / (union - overlap);
 };
 
-const compareSize = (component, detection) => {
-    const overall = 360 * 640;
-    const ads: number = Math.abs(boxArea(component.bbox) / overall - boxArea(detection.bbox) / overall);
-    // console.log(ads);
-    return ads;
-};
+// const compareSize = (component, detection) => {
+//     const overall = 360 * 640;
+//     const ads: number = Math.abs(boxArea(component.bbox) / overall - boxArea(detection.bbox) / overall);
+//     // console.log(ads);
+//     return ads;
+// };
 export const matchBoxes = (components, detections) => {
     detections.forEach((detection) => {
         components.forEach((component) => {
-            // Check if the two boxes are similar in size.
-            if (compareSize(component, detection) < 0.01) {
-                const iou = computeIoU(component, detection);
-                const similarity = cosine.similarity(component.label, detection.label);
+            const iou = computeIoU(component, detection);
+            const similarity = cosine.similarity(component.label, detection.label);
 
-                // check if two boxes overlapped and Check how similar the two labels of cosine are
-                if (iou >= 0.5) {
-                    detection['iou'] = iou;
-                    detection['labelSimilarity'] = similarity;
-                    detection['design'] = component;
-                }
+            // check if two boxes overlapped and Check how similar the two labels of cosine are
+            if (iou >= 0.5) {
+                detection['iou'] = iou;
+                detection['labelSimilarity'] = similarity;
+                detection['design'] = component;
             }
         });
     });
@@ -266,10 +263,10 @@ export const runPredict = async (
 
         postAlert('alert', 'Getting Components from Figma');
 
-        const resizeX = c.width / width;
-        const resizeY = c.height / height;
+        const ratioX = c.width / width;
+        const ratioY = c.height / height;
         console.log('components: ', components);
-        drawBoxes(components, context, null, 2, '#FFA500', resizeX, resizeY);
+        drawBoxes(components, context, null, 2, '#FFA500', ratioX, ratioY);
 
         // Draw Prediction
         postAlert('alert', 'Predicting...');
