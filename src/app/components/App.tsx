@@ -133,7 +133,7 @@ const App = () => {
         label: string;
     }
     const generateObjects = (components: Component[]) => {
-        let annotation;
+        let annotation = '';
         components.forEach((component: Component) => {
             let xmin = component.bbox[0];
             let ymin = component.bbox[1];

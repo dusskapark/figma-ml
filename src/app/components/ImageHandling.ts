@@ -210,28 +210,36 @@ const computeIoU = (component, detection) => {
     return overlap / (union - overlap);
 };
 
-// const compareSize = (component, detection) => {
-//     const overall = 360 * 640;
-//     const ads: number = Math.abs(boxArea(component.bbox) / overall - boxArea(detection.bbox) / overall);
-//     // console.log(ads);
-//     return ads;
-// };
-export const matchBoxes = (components, detections) => {
-    detections.forEach((detection) => {
-        components.forEach((component) => {
-            const iou = computeIoU(component, detection);
-            const similarity = cosine.similarity(component.label, detection.label);
+const pytha = (component, detection) => {
+    const x = Math.abs(component.bbox[0] - detection.bbox[0]);
+    const y = Math.abs(component.bbox[1] - detection.bbox[1]);
+    const length = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+    return length;
+};
 
-            // check if two boxes overlapped and Check how similar the two labels of cosine are
-            if (iou >= 0.5) {
-                detection['iou'] = iou;
-                detection['labelSimilarity'] = similarity;
-                detection['design'] = component;
+export const matchBoxes = (components, detections) => {
+    const matchs = [...detections];
+    const finding = [];
+
+    for (let index = 0; index < matchs.length; index++) {
+        const match = matchs[index];
+        components.forEach((component) => {
+            const distance = pytha(component, match);
+            const iou = computeIoU(component, match);
+            const similarity = cosine.similarity(component.label, match.label);
+            if (distance < 50) {
+                // check if two boxes overlapped and Check how similar the two labels of cosine are
+                if (iou >= 0.5) {
+                    match['iou'] = iou;
+                    match['labelSimilarity'] = similarity;
+                    match['design'] = component;
+                    finding.push(match);
+                }
             }
         });
-    });
+    }
 
-    return detections;
+    return finding;
 };
 
 const drawCorrection = (matched) => {
