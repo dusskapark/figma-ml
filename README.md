@@ -48,7 +48,7 @@ This plugin is built using [Figma plugin React Template](https://github.com/nirs
 
 - [JooHyung Park](https://github.com/dusskapark)
 - [JeongHyun Yoon](https://github.com/ave10987)
-- [JinJae Lee](https://github.com/jinbread)
+- [JinJae Lee](https://jinbread.works)
 - [JongHee Woo](https://github.com/JongheeWoo)
 
 
