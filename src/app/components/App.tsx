@@ -248,6 +248,7 @@ const App = () => {
         // This is how we read messages sent from the plugin controller
         window.onmessage = async (event: any) => {
             const pluginMessage = event.data.pluginMessage;
+
             // Export PNG
             if (pluginMessage.type === 'export-png') {
                 const png = await pluginMessage.exportImages;

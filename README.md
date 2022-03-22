@@ -36,6 +36,12 @@ The best way to illustrate this is to see it in action via the animation below:
 ⭐ To interact with the Figma API edit [controller.ts](./src/plugin/controller.ts).  
 ⭐ Read more on the [Figma API Overview](https://www.figma.com/plugin-docs/api/api-overview/).
 
+## Change models
+
+* We’ve basically installed the default model that trained with [CLAY](https://github.com/google-research-datasets/clay) dataset and MobileNetV2.
+* If you want to change this default model, you can config the model from `Figma` -> `Plugins` -> `Figma ML` -> `Config a model`.
+* You can also refer to the training test results we did [here](https://github.com/dusskapark/design-system-detector).
+
 ## Toolings
 
 This plugin is built using [Figma plugin React Template](https://github.com/nirsky/figma-plugin-react-template) by [Nir Hadassi](https://github.com/nirsky). It's an excellent boilerplate for new Figma plugins and includes a ton of useful utilities. Check out the Figma plugin API docs to learn more about writing plugins. This repo is using:

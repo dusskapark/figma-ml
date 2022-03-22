@@ -5,25 +5,6 @@ export const uint8ArrayToObjectURL = (data: Uint8Array): string => {
     return URL.createObjectURL(new Blob([data], {type: 'image/png'}));
 };
 
-// const getPNGAssetsFromPluginMessage = async (
-//     pluginMessage: any
-// ): Promise<{id: string; path: string; data: Uint8Array; width: number; height: number; components: any[]}[]> => {
-//     let assets: any[] = [];
-//     let exports = pluginMessage.exportImages;
-//     console.log(exports);
-//     exports.forEach((item) => {
-//         assets.push({
-//             id: item.id,
-//             path: item.path,
-//             data: item.imageData,
-//             width: item.width,
-//             height: item.height,
-//             components: item.components,
-//         });
-//     });
-//     return assets;
-// };
-
 export const postAlert = (type: string, message: any) => {
     parent.postMessage(
         {
@@ -80,7 +61,7 @@ const renderPredictions = (
     let detectionObjects: any = [];
 
     scores[0].forEach((score: number, i: number) => {
-        if (score > 0.3) {
+        if (score > 0.4) {
             const bbox = [];
             const minY = boxes[0][i][0] * height;
             const minX = boxes[0][i][1] * width;
@@ -210,42 +191,39 @@ const computeIoU = (component, detection) => {
     return overlap / (union - overlap);
 };
 
-const pytha = (component, detection) => {
-    const x = Math.abs(component.bbox[0] - detection.bbox[0]);
-    const y = Math.abs(component.bbox[1] - detection.bbox[1]);
-    const length = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-    return length;
-};
+// const pytha = (component, detection) => {
+//     const x = Math.abs(component.bbox[0] - detection.bbox[0]);
+//     const y = Math.abs(component.bbox[1] - detection.bbox[1]);
+//     const length = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+//     return length;
+// };
 
 export const matchBoxes = (components, detections) => {
     const matchs = [...detections];
-    const finding = [];
 
     for (let index = 0; index < matchs.length; index++) {
         const match = matchs[index];
         components.forEach((component) => {
-            const distance = pytha(component, match);
+            // const distance = pytha(component, match);
             const iou = computeIoU(component, match);
             const similarity = cosine.similarity(component.label, match.label);
-            if (distance < 50) {
-                // check if two boxes overlapped and Check how similar the two labels of cosine are
-                if (iou >= 0.5) {
-                    match['iou'] = iou;
-                    match['labelSimilarity'] = similarity;
-                    match['design'] = component;
-                    finding.push(match);
-                }
+
+            if (iou >= 0.5) {
+                match['iou'] = iou;
+                match['labelSimilarity'] = similarity;
+                match['design'] = component;
             }
         });
     }
 
-    return finding;
+    return matchs;
 };
 
 const drawCorrection = (matched) => {
     const corrections: any = [];
 
     matched.forEach((match) => {
+        // match.iou != null && match.labelSimilarity < 0.5 ? corrections.push(match) : null;
         !match.iou ? corrections.push(match) : match.labelSimilarity < 0.5 ? corrections.push(match) : null;
     });
     return corrections;
