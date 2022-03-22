@@ -74,13 +74,13 @@ interface Model {
 
 const defaultModel: Model = {
     name: 'CLAY',
-    model: 'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-50k/web-model/model.json',
+    model: 'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-8k/web-model/model.json',
     label_map:
-        'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-50k/web-model/label_map.json',
+        'https://raw.githubusercontent.com/dusskapark/design-system-detector/master/clay/models/mobilenetv2-8k/web-model/label_map.json',
     saved_model_cli: {
         boxes: 5,
-        scores: 4,
-        classes: 0,
+        scores: 6,
+        classes: 3,
     },
 };
 
